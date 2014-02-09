@@ -1,0 +1,175 @@
+<!DOCTYPE HTML>
+<html lang='en'>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="/style.css">
+<link href='http://fonts.googleapis.com/css?family=Scada' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Oranienbaum' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-47801434-1', 'chogg.name');
+  ga('send', 'pageview');
+</script>
+<meta content='nanoc 3.6.6' name='generator'>
+<title>
+Gaining experience with Fibonacci sums
+[Charles R. Hogg III]
+</title>
+</head>
+<body>
+<div id='title'>
+<a title="Main page" href="/">Charles R. Hogg III</a>
+<div id='nav'>
+<ul>
+<li>
+<a title="About the author, the website, etc." href="/about/">About</a>
+</li>
+<li>
+<a title="Personal blog" href="/blog/">Blog</a>
+</li>
+<li>
+<a title="Ways to contact me online" href="/contact/">Contact</a>
+</li>
+</ul>
+</div>
+</div>
+<hr>
+<div id='main'>
+<div id='post'>
+<h1>
+Gaining experience with Fibonacci sums
+</h1>
+<aside>
+Posted at 2014-02-08 20:47
+</aside>
+<article>
+<p>Recently, a friend asked me a fun math question. He's creating a real-life RPG for artists, called <em>illolife</em><sup><a href="#fn1" class="footnoteRef" id="fnref1">1</a></sup>. He wrote the experience point threshold for each level in terms of the previous level's threshold. His question: is there a formula to get that threshold <em>directly</em>, without computing all the levels before it?</p>
+<p>I say it's "fun" because the level differences follow the <a href="http://en.wikipedia.org/wiki/Fibonacci_number">Fibonacci sequence</a>. Specifically: If <span class="math">\(X_i\)</span> represents the experience needed for level <span class="math">\(i\)</span><sup><a href="#fn2" class="footnoteRef" id="fnref2">2</a></sup>, and <span class="math">\(F_i\)</span> is the <span class="math">\(i\)</span>th Fibonacci number, then <span class="math">\[X_{i + 1} = X_i + 250 F_i.\]</span> (The factor of 250 is just a scaling factor, and it's not important.)</p>
+<p>So the question boils down to: <em>is there a compact way to compute sums of Fibonacci numbers</em>?</p>
+<h2 id="fibonacci-sums-are-almost-fibonacci-numbers">Fibonacci sums are <em>almost</em> Fibonacci numbers</h2>
+<p>As it happens, Fibonacci <em>sums</em> follow the same pattern as Fibonacci <em>numbers</em>, but they're always ahead 2 spots in the sequence, and off by 1: <span class="math">\[\sum_{i=1}^n F_i = F_{n + 2} - 1.\]</span> Here are a few examples.</p>
+<table>
+<col width="8%">
+<col width="44%">
+<col width="19%">
+<thead><tr class="header">
+<th align="left"><span class="math">\(n\)</span></th>
+<th align="left"><span class="math">\(\sum\limits_{i=1}^n F_i\)</span></th>
+<th align="left"><span class="math">\(F_{n + 2}\)</span></th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left"><p><span class="math">\(1\)</span></p></td>
+<td align="left"><p><span class="math">\(\mathbf{1}\)</span></p></td>
+<td align="left"><p><span class="math">\(2\)</span></p></td>
+</tr>
+<tr class="even">
+<td align="left"><p><span class="math">\(2\)</span></p></td>
+<td align="left"><p><span class="math">\(1 + 1 = \mathbf{2}\)</span></p></td>
+<td align="left"><p><span class="math">\(3\)</span></p></td>
+</tr>
+<tr class="odd">
+<td align="left"><p><span class="math">\(4\)</span></p></td>
+<td align="left"><p><span class="math">\(1 + 1 + 2 + 3 = \mathbf{7}\)</span></p></td>
+<td align="left"><p><span class="math">\(8\)</span></p></td>
+</tr>
+<tr class="even">
+<td align="left"><p><span class="math">\(8\)</span></p></td>
+<td align="left"><p><span class="math">\(1 + 1 + 2 + 3 + 5  + 8 + 13 + 21 = \mathbf{54}\)</span></p></td>
+<td align="left"><p><span class="math">\(55\)</span></p></td>
+</tr>
+</tbody>
+</table><p>What a delightful result! It shows that Fibonacci sums are as easy to compute as Fibonacci numbers. This raises the question -- how easy are Fibonacci numbers to compute?</p>
+<h2 id="binets-formula-and-the-golden-ratio">Binet's formula and the golden ratio</h2>
+<p>A simple expression, known as <em><a href="http://mathworld.wolfram.com/BinetsFibonacciNumberFormula.html">Binet's formula</a></em>, can directly compute the <span class="math">\(n\)</span>th Fibonacci number. Using <span class="math">\(\varphi \equiv \left(1 + \sqrt{5}\right) / 2\)</span>, the <a href="http://www.mathsisfun.com/numbers/golden-ratio.html">golden ratio</a>, we have:</p>
+<p><span class="math">\[F_n = \frac{\varphi ^ n - \left(1 - \varphi\right) ^ n}{\sqrt{5}}.\]</span></p>
+<p>Here is a simple <a href="http://www.r-project.org/">R</a> function to compute it.</p>
+<pre class="sourceCode r"><code class="sourceCode r">fib_closed_form &lt;-<span class="st"> </span>function(n) {
+  <span class="co"># Compute the nth fibonacci number with Binet's formula, using the golden</span>
+  <span class="co"># ratio 'phi'.</span>
+  phi &lt;-<span class="st"> </span>(<span class="dv">1</span> +<span class="st"> </span><span class="kw">sqrt</span>(<span class="dv">5</span>)) /<span class="st"> </span><span class="dv">2</span>
+  <span class="kw">return</span> ((phi ^<span class="st"> </span>n -<span class="st"> </span>(<span class="dv">1</span> -<span class="st"> </span>phi) ^<span class="st"> </span>n) /<span class="st"> </span><span class="kw">sqrt</span>(<span class="dv">5</span>))
+}</code></pre>
+<p>Binet's formula surprised me at first: it's a function of <em>irrational</em> numbers which gives <em>integers</em> every time! Fortunately, it's fairly easy to work them out by hand to see why it works. I did the first few, which made it seem a lot more plausible to me.</p>
+<p>I was worried that we might lose precision by going to floating point numbers and then coming back to integers. To check whether this is a problem, we need a "gold standard" for Fibonacci numbers to compare against. Here is another helper function which computes Fibonacci numbers directly from their definition. (Since it only uses integers, it shouldn't be affected by floating point errors.)</p>
+<pre class="sourceCode r"><code class="sourceCode r">fib_direct &lt;-<span class="st"> </span>function(n) {
+  <span class="co"># Compute the nth fibonacci number directly from the definition.</span>
+  <span class="co"># (Assumes n &gt;= 1.)</span>
+  fib &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>)
+  while (<span class="kw">length</span>(fib) &lt;<span class="st"> </span><span class="kw">max</span>(n)) {
+    fib &lt;-<span class="st"> </span><span class="kw">c</span>(fib, <span class="kw">sum</span>(<span class="kw">tail</span>(fib, <span class="dv">2</span>)))
+  }
+  <span class="kw">return</span> (fib[n])
+}</code></pre>
+<p>Now we can compare the results from each.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># A set of n-values for testing purposes.</span>
+n &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dt">from=</span><span class="dv">5</span>, <span class="dt">to=</span><span class="dv">80</span>, <span class="dt">by=</span><span class="dv">5</span>)
+
+<span class="co"># Compute Fibonacci numbers at these n-values by both methods, and compute the</span>
+<span class="co"># difference between them.</span>
+fib_compare &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">n=</span>n,
+                          <span class="dt">direct=</span><span class="kw">fib_direct</span>(n),
+                          <span class="dt">binet=</span><span class="kw">fib_closed_form</span>(n))
+fib_compare$diff &lt;-<span class="st"> </span>fib_compare$binet -<span class="st"> </span>fib_compare$direct 
+
+<span class="co"># Display the results.</span>
+<span class="kw">print</span>(fib_compare, <span class="dt">row.names=</span><span class="ot">FALSE</span>)</code></pre>
+<pre><code>##   n            direct             binet                   diff
+##   5                 5                 5  0.0000000000000008882
+##  10                55                55  0.0000000000000142109
+##  15               610               610  0.0000000000003410605
+##  20              6765              6765  0.0000000000045474735
+##  25             75025             75025  0.0000000000582076609
+##  30            832040            832040  0.0000000008149072528
+##  35           9227465           9227465  0.0000000111758708954
+##  40         102334155         102334155  0.0000001341104507446
+##  45        1134903170        1134903170  0.0000016689300537109
+##  50       12586269025       12586269025  0.0000190734863281250
+##  55      139583862445      139583862445  0.0002441406250000000
+##  60     1548008755920     1548008755920  0.0029296875000000000
+##  65    17167680177565    17167680177565  0.0371093750000000000
+##  70   190392490709135   190392490709135  0.4375000000000000000
+##  75  2111485077978050  2111485077978055  5.2500000000000000000
+##  80 23416728348467684 23416728348467744 60.0000000000000000000</code></pre>
+<p>Looks like the concern was justified: things go awry somewhere between <span class="math">\(F_{70}\)</span> and <span class="math">\(F_{75}\)</span>. Still, the formula works remarkably well until that point. Especially considering the application -- it'll be a long time before any illolifer hits level 70!</p>
+<h2 id="a-surprising-connection">A surprising connection</h2>
+<p>So far, we've used two convenient results:</p>
+<ol style="list-style-type: decimal">
+<li>The sums of Fibonacci numbers are (almost) Fibonacci again.</li>
+<li>Binet's formula, <span class="math">\(F_n = \left(\varphi^n - (1 - \varphi)^n\right) / \sqrt{5}\)</span>, directly gives the <span class="math">\(n\)</span>th Fibonacci number.</li>
+</ol><p>Surprisingly, these results are related!</p>
+<p>Consider the first one: the sum over a sequence gives the same sequence<sup><a href="#fn3" class="footnoteRef" id="fnref3">3</a></sup>. For <em>continuous</em> quantities (instead of <em>discrete</em>), we'd have integrals instead of sums, and functions instead of sequences. So, this is like saying the <em>integral</em> of a <em>function</em> gives that same <em>function</em>. This is a well-known property of <a href="http://www.animations.physics.unsw.edu.au/jw/calculus.htm#exp">exponential functions</a>! How suggestive -- do the Fibonacci numbers grow exponentially?</p>
+<p>They do. Look at Binet's formula, and realize that <span class="math">\(\left|1 - \varphi\right| &lt; 1\)</span>; this means that the <span class="math">\(\left(1 - \varphi\right)^n\)</span> term is insignificant for large <span class="math">\(n\)</span>. What remains is <span class="math">\[F_n \approx \frac{\varphi^n}{\sqrt{5}} \,\,\,\,\,\,\,\,(\text{for large }n).\]</span> This is exponential with a base of <span class="math">\(\varphi\)</span>.</p>
+<p>So we needed two properties of Fibonacci numbers, and it turns out that their hidden exponential nature underpins both of these properties.</p>
+<h2 id="finally-computing-the-experience-for-level-n">Finally: computing the experience for level <span class="math">\(n\)</span>
+</h2>
+<p>Putting all the pieces together, and remembering that <span class="math">\(\varphi = \left(1 + \sqrt{5}\right) / 2\)</span>, we have</p>
+<p><span class="math">\[X_n = 250\left(
+  \frac{\varphi^{n + 1} - \left(1 - \varphi\right)^{n + 1}}{\sqrt{5}} - 1
+\right)\]</span></p>
+<p>Sanity check: what are the first few levels?</p>
+<pre class="sourceCode r"><code class="sourceCode r">X &lt;-<span class="st"> </span>function(n) {
+  phi &lt;-<span class="st"> </span>(<span class="dv">1</span> +<span class="st"> </span><span class="kw">sqrt</span>(<span class="dv">5</span>)) /<span class="st"> </span><span class="dv">2</span>
+  <span class="kw">return</span> (<span class="dv">250</span> *<span class="st"> </span>((phi ^<span class="st"> </span>(n +<span class="st"> </span><span class="dv">1</span>) -<span class="st"> </span>(<span class="dv">1</span> -<span class="st"> </span>phi) ^<span class="st"> </span>(n +<span class="st"> </span><span class="dv">1</span>)) /<span class="st"> </span><span class="kw">sqrt</span>(<span class="dv">5</span>) -<span class="st"> </span><span class="dv">1</span>))
+}
+<span class="kw">cat</span>(<span class="kw">X</span>(<span class="dv">1</span>:<span class="dv">10</span>))</code></pre>
+<pre><code>## 0 250 500 1000 1750 3000 5000 8250 13500 22000</code></pre>
+<p>These numbers exactly match the ones he provided me. Success!</p>
+<div class="footnotes">
+<hr>
+<ol>
+<li id="fn1"><p>This is <a href="https://www.facebook.com/groups/illolifeRPG/#_=_">the link for illolife</a>, but note that you have to be logged in to facebook to see anything.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p><span class="math">\(X_1 = 0\)</span>, since everybody starts at level 1.<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>Well, up to a small constant offset.<a href="#fnref3">↩</a></p></li>
+</ol>
+</div>
+</article>
+</div>
+
+</div>
+</body>
+</html>
