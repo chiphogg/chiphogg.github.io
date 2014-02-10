@@ -68,8 +68,21 @@ a {
   margin-top: 0;
 }
 
-aside.posted_at {
+aside.tldr {
+  font-size: 120%;
+  font-style: italic;
+}
+
+#main #post aside.tldr, aside.posted_at {
   color: #555;
+}
+
+#main #post aside.tldr {
+  width: 75%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 0.5em;
+  margin-bottom: 1.5em;
 }
 
 #main table {
