@@ -1,0 +1,126 @@
+<!DOCTYPE HTML>
+<html lang='en'>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="/style.css">
+<link href='http://fonts.googleapis.com/css?family=Scada' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Oranienbaum' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-47801434-1', 'chogg.name');
+  ga('send', 'pageview');
+</script>
+<meta content='nanoc 3.7.3' name='generator'>
+<title>
+Transparent, reproducible blogging with nanoc and knitr
+[Charles R. Hogg III]
+</title>
+</head>
+<body>
+<div id='title'>
+<a title="Main page" href="/">Charles R. Hogg III</a>
+<div id='nav'>
+<ul>
+<li>
+<a title="About the author, the website, etc." href="/about/">About</a>
+</li>
+<li>
+<a title="Personal blog" href="/blog/">Blog</a>
+</li>
+<li>
+<a title="Things I'm working on" href="/projects/">Projects</a>
+</li>
+<li>
+<a title="Ways to contact me online" href="/contact/">Contact</a>
+</li>
+</ul>
+</div>
+</div>
+<hr>
+<div id='main'>
+<div id='post'>
+<h1>
+Transparent, reproducible blogging with nanoc and knitr
+</h1>
+<aside class='posted_at'>
+Posted at 2015-03-19 22:36
+</aside>
+<aside class='tldr'>
+<b>tl;dr:</b>
+When I write R code in my blog posts, nanoc runs it and includes the results in the output -- figures and all.
+</aside>
+<article>
+<p>The key to science is reproducibility: if others can't check your work, it might as well not exist.</p>
+<p>This idea is evolving into a concept called <a href="https://www.coursera.org/course/repdata">reproducible research</a>: don't just publish the results of an analysis, publish the analysis itself --- including the raw data and software. This accelerates progress: not only is it easier to verify the results; it's easier to build on those results.</p>
+<p>This applies to scientific <em>blogging</em>, too. Blogs are already a fast way to spread ideas. Blogs with data and software included --- "<em>reproducible</em> blogs" --- are even faster, since others can grab the code and play with the concepts you present. Not to mention, it's harder for mistakes to hide.</p>
+<h2 id="tips-for-reproducible-blogging-with-knitr">Tips for reproducible blogging with knitr</h2>
+<p>I've set up this website to support reproducible blogging. Here are some of the things I've learned along the way.</p>
+<h3 id="use-a-static-site-generator">Use a static site generator</h3>
+<p>Dynamic sites build the page every time it loads. Static sites are nothing more than simple HTML files. For reproducible blogging, static sites have the edge.</p>
+<p>Re-running the R code every time the page loads would be too slow (and probably technically infeasible). Instead, run the code locally on your computer, and just generate the HTML files once. This also makes hosting much easier: you don't need special software like PHP and MySQL; literally any webserver will do.</p>
+<p>My weapon of choice is <a href="http://nanoc.ws/">nanoc</a>. It's very actively developed, and it's flexible and extensible enough to handle whatever tools I want to use. The downside (for me) is that it's written in Ruby, and I don't know Ruby. But I'm glad I didn't let that stop me; in practice, it's been easy to pick up just what I need.</p>
+<h3 id="automatically-link-to-the-source-for-every-page">Automatically link to the source for every page</h3>
+<p>True transparency doesn't make people hunt. It advertises!</p>
+<p>In my case, I put a link at the top right of each page to its own source. Here's <a href="https://github.com/chiphogg/chogg_name/blob/3f8e2e1851bdf90282a9414b6843195fe7dd08a7/layouts/default.haml#L43-L45">how I did it</a> in nanoc.</p>
+<h3 id="think-of-knitr-as-a-text-filter">Think of knitr as a text filter</h3>
+<p>In other words: a thing which gets some input text, modifies it, and outputs the result.</p>
+<p>The <a href="https://github.com/chiphogg/chogg_name/blob/3f8e2e1851bdf90282a9414b6843195fe7dd08a7/lib/default.rb#L15-L25">knitr filter</a> has one simple job: run the snippets of R code it finds, and stick the results in the text. It doesn't need to worry about other manipulations, since filters can be chained: the output of one is the input of the next. For instance, I use a <a href="http://johnmacfarlane.net/pandoc/">pandoc</a> filter to turn the output of knitr into HTML for my website.</p>
+<h3 id="dont-be-scared-by-gits-lousy-image-handling">Don't be scared by git's lousy image handling</h3>
+<p>I procrastinated for more than a year between writing that knitr filter and adding support for figures. The bogeyman was git's awful reputation for handling image files. Over the years, people have developed <a href="http://stackoverflow.com/questions/540535/managing-large-binary-files-with-git">a confusing array of not-quite-satisfactory workarounds</a>. I didn't want to go through the hassle of comparing them and committing to one.</p>
+<p>Happily, git's handling of images turns out to be a complete non-issue, since <em>the images never end up in git</em>.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> Only the source code goes in version control. The output (including images) just gets copied to the webserver.</p>
+<p>I wish I'd realized sooner how easy it was! I could have been making beautiful plots for years.</p>
+<h3 id="set-base.path-to-the-output-directory-for-your-post">Set <code>base.path</code> to the output directory for your post</h3>
+<p>If we want figures, the simple "filter" model isn't enough. Instead, knitr becomes a "filter with side effects". Here's what I mean.</p>
+<p>Sometimes, an R snippet does more than simply output an answer; for example, when you construct a plot, it creates an image file. That image is the "side effect". And it raises a question: where should that file be created?</p>
+<p>Clearly, it needs to be created somewhere under the <code>output/</code> directory, or else it won't end up on the webserver when we copy the files over. If we want to keep things neat (and if we don't want to worry about filename collisions!), we should probably stick it in a subdirectory specific to its post.</p>
+<p>Fortunately, knitr has an option called <code>base.dir</code> which controls where the figures end up. Getting the figures right is as simple as <a href="https://github.com/chiphogg/chogg_name/blob/8fd1187c2cf688ec115a99a0afd04ae4f21004f3/lib/default.rb#L42-L43">setting this option to the appropriate directory for the current post</a>.</p>
+<p>Don't be confused by the similarly-named <code>root.dir</code> option! For purposes of getting the figures to work, it's a complete red herring.</p>
+<h2 id="a-simple-example">A simple example</h2>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Fix the seed for the random number generator (for reproducibility).</span>
+<span class="kw">set.seed</span>(<span class="dv">1</span>)
+
+<span class="co"># Let's generate 200 pairs of random numbers.</span>
+N &lt;-<span class="st"> </span><span class="dv">200</span>
+random_numbers &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dt">ncol=</span><span class="dv">2</span>, <span class="kw">rnorm</span>(<span class="dt">n=</span><span class="dv">2</span> *<span class="st"> </span>N))
+
+<span class="co"># Generate a simple covariance matrix, and take its Cholesky decomposition so</span>
+<span class="co"># we can use it to generate correlated random draws.</span>
+covariance &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="fl">0.9</span>, <span class="fl">0.9</span>, <span class="dv">1</span>), <span class="dt">nrow=</span><span class="dv">2</span>)
+cholesky &lt;-<span class="st"> </span><span class="kw">chol</span>(covariance)
+d &lt;-<span class="st"> </span><span class="kw">data.frame</span>(random_numbers %*%<span class="st"> </span>cholesky)
+<span class="kw">names</span>(d) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">'x'</span>, <span class="st">'y'</span>)
+
+<span class="co"># Make a simple scatterplot.</span>
+<span class="kw">require</span>(ggplot2)
+<span class="kw">print</span>(<span class="kw">ggplot</span>(<span class="dt">data=</span>d, <span class="kw">aes</span>(<span class="dt">x=</span>x, <span class="dt">y=</span>y))
+      +<span class="st"> </span><span class="kw">geom_point</span>()
+      +<span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">"A pointless, point-filled plot"</span>)
+      )</code></pre>
+<div class="figure">
+<img src="correlated_scatterplot.png">
+</div>
+<h2 id="join-the-fun">Join the fun!</h2>
+<p>I am far from the first to advocate and implement reproducible research in blogging. For example, <a href="http://www.carlboettiger.info/">Carl Boettiger</a> has maintained an <a href="http://www.carlboettiger.info/2012/09/28/Welcome-to-my-lab-notebook.html">open lab notebook</a> for years, and I'm sure there are many other examples which I haven't yet seen.</p>
+<p>But I don't want it to be merely possible; I want it to be <em>commonplace</em>. I want it to be <em>standard</em>. I want a world where it's so easy to do it right, people are suspicious of bloggers who don't. Sharing my implementation (and the tricks I learned along the way) is my modest contribution to making that world a reality.</p>
+<div class="footnotes">
+<hr>
+<ol>
+<li id="fn1"><p>Technically, since I'm using github pages to host my website, the images <em>do</em> end up in a git repository; just not the <em>source</em> repository. If the images ever become a problem, I can just rebase and squash all the commits. Yes, that's changing public history, but nobody should be cloning my github pages repo anyway; it's purely for hosting and its versioned history doesn't matter.<a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
+
+</article>
+</div>
+
+</div>
+<div id='source'>
+<a href='https://github.com/chiphogg/chogg_name/tree/master/content/blog/nanoc_knitr.Rmd'>
+Page source on GitHub
+</a>
+</div>
+</body>
+</html>
