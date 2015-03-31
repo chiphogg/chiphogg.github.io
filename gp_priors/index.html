@@ -1,0 +1,79 @@
+<!DOCTYPE HTML>
+<html lang='en'>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="/style.css">
+<link href='http://fonts.googleapis.com/css?family=Scada' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Oranienbaum' rel='stylesheet' type='text/css'>
+<script type='text/javascript' src='/assets/js/animation.js'></script>
+<script type='text/javascript' src='/assets/js/jstat.js'></script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!--Load the AJAX API-->
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-47801434-1', 'chogg.name');
+  ga('send', 'pageview');
+</script>
+<meta content='nanoc 3.7.3' name='generator'>
+<title>
+Animated visualizations of Gaussian Process priors
+[Charles R. Hogg III]
+</title>
+</head>
+<body>
+<div id='title'>
+<a title="Main page" href="/">Charles R. Hogg III</a>
+<div id='nav'>
+<ul>
+<li>
+<a title="About the author, the website, etc." href="/about/">About</a>
+</li>
+<li>
+<a title="Personal blog" href="/blog/">Blog</a>
+</li>
+<li>
+<a title="Things I'm working on" href="/projects/">Projects</a>
+</li>
+<li>
+<a title="Ways to contact me online" href="/contact/">Contact</a>
+</li>
+</ul>
+</div>
+</div>
+<hr>
+<div id='main'>
+<div id="chart">
+
+</div>
+<script type='text/javascript'>
+// Load the Visualization API.
+google.load('visualization', '1.0', {'packages':['corechart']});
+// Set a callback to run when the Google Visualization API is loaded.
+var myChart = null;
+google.setOnLoadCallback(loaded);
+
+function loaded() {
+  myChart = AnimatedChart();
+  google.visualization.events.addListener(myChart.chart, 'animationfinish', myChart.draw);
+  //myChart.start();
+}
+</script>
+<button onclick="myChart.start();">
+Start!
+</button>
+<button onclick="myChart.stop();">
+Stop!
+</button>
+
+</div>
+<div id='source'>
+<a href='https://github.com/chiphogg/chogg_name/tree/master/content/gp_priors.pandoc'>
+Page source on GitHub
+</a>
+</div>
+</body>
+</html>
