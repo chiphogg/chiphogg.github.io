@@ -5,8 +5,9 @@
 <link rel="stylesheet" href="/style.css">
 <link href='http://fonts.googleapis.com/css?family=Scada' rel='stylesheet' type='text/css'>
 <link href='http://fonts.googleapis.com/css?family=Oranienbaum' rel='stylesheet' type='text/css'>
-<script type='text/javascript' src='/assets/js/animation.js'></script>
 <script type='text/javascript' src='/assets/js/jstat.js'></script>
+<script type='text/javascript' src='/assets/js/linear_algebra.js'></script>
+<script type='text/javascript' src='/assets/js/animation.js'></script>
 <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 <!--Load the AJAX API-->
 <script type="text/javascript" src="https://www.google.com/jsapi"></script>
@@ -56,18 +57,19 @@ google.load('visualization', '1.0', {'packages':['corechart']});
 var myChart = null;
 google.setOnLoadCallback(loaded);
 
+// Global variables I might find useful.
+var max_x = 8;
+var num_points = 101;
+var x = Array.apply(0, Array(num_points)).map(
+    function(_, i) { return max_x * i / (num_points - 1); });
+
 function loaded() {
-  myChart = AnimatedChart();
-  google.visualization.events.addListener(myChart.chart, 'animationfinish', myChart.draw);
-  //myChart.start();
+  myChart = AnimatedChart(
+      DatasetGenerator(x, jStat(x).multiply(0), undefined, 15));
+  google.visualization.events.addListener(
+      myChart.chart, 'animationfinish', myChart.draw);
 }
 </script>
-<button onclick="myChart.start();">
-Start!
-</button>
-<button onclick="myChart.stop();">
-Stop!
-</button>
 
 </div>
 <div id='source'>
