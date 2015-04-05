@@ -39,9 +39,10 @@ function DatasetGenerator(x, mu, kFunc, N_t) {
   // matrix to update.
   var i = N_t - 1;
   // The covariance matrix in space.
-  K = jStat.create(N, N, function(i, j) {
-    return kFunc(x[i], x[j]);
-  });
+  //
+  // We add a small amount of noise on the diagonal to help computational
+  // stability.
+  K = CovarianceMatrix(x, kFunc);
   var U = jStat.transpose(Cholesky(K));
 
   return_object.NextDataset = function() {
@@ -62,7 +63,9 @@ function DatasetGenerator(x, mu, kFunc, N_t) {
 };
 
 // Return a chart object.
-function AnimatedChart(dataset_generator, div_id, title) {
+function AnimatedChart(dataset_generator, div_id, title, chart_type, options) {
+  chart_type = (typeof chart_type !== 'undefined') ?
+    chart_type : google.visualization.LineChart;
   // The generator which generates new datasets.
   var generator = dataset_generator;
   // The number of milliseconds for each frame.
@@ -76,33 +79,34 @@ function AnimatedChart(dataset_generator, div_id, title) {
   data.addRows(zip([x, generator.NextDataset()]));
 
   // Set chart options.
-  var options = {
-    title: title,
-    width: 800,
-    vAxis: {
-      viewWindow: {
-        min: -3.0,
-        max: 3.0,
+  var chart_options = $.extend(
+      {
+        title: title,
+        width: 800,
+        vAxis: {
+          viewWindow: {
+            min: -3.0,
+            max: 3.0,
+          },
+        },
+        animation: {
+          duration: frame_length,
+          easing: 'linear',
+        },
+        height: 500
       },
-    },
-    animation: {
-      duration: frame_length,
-      easing: 'linear',
-      startup: true,
-    },
-    height: 500};
+      options);
 
   var return_object = {
     animation_id: null,
   };
 
-  return_object.chart = new
-    google.visualization.LineChart(document.getElementById(div_id))
-  return_object.chart.draw(data, options);
+  return_object.chart = new chart_type(document.getElementById(div_id))
+  return_object.chart.draw(data, chart_options);
 
   return_object.draw = function() {
     // Kick off the animation.
-    return_object.chart.draw(data, options);
+    return_object.chart.draw(data, chart_options);
 
     // Compute the new data for the next frame.
     var new_data = generator.NextDataset();
@@ -110,6 +114,20 @@ function AnimatedChart(dataset_generator, div_id, title) {
       data.setValue(i, 1, new_data[i]);
     }
   };
+
+  // Functions to start and stop the animations.
+  var listener_id = null;
+  return_object.stop = function() {
+    if (listener_id !== null) {
+      google.visualization.events.removeListener(listener_id);
+      listener_id = null;
+    }
+  }
+  return_object.start = function() {
+    listener_id = google.visualization.events.addListener(
+        return_object.chart, 'animationfinish', return_object.draw);
+    return_object.chart.draw(data, chart_options);
+  }
 
   return return_object;
 };

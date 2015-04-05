@@ -7,7 +7,9 @@
 <link href='http://fonts.googleapis.com/css?family=Oranienbaum' rel='stylesheet' type='text/css'>
 <script type='text/javascript' src='/assets/js/jstat.js'></script>
 <script type='text/javascript' src='/assets/js/linear_algebra.js'></script>
+<script type='text/javascript' src='/assets/js/covariance.js'></script>
 <script type='text/javascript' src='/assets/js/animation.js'></script>
+<script type='text/javascript' src='/assets/js/jquery.js'></script>
 <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 <!--Load the AJAX API-->
 <script type="text/javascript" src="https://www.google.com/jsapi"></script>
@@ -50,6 +52,9 @@ Animated visualizations of Gaussian Process priors
 <div id="chart_independent">
 
 </div>
+<div id="chart_exp">
+
+</div>
 <div id="chart_SE">
 
 </div>
@@ -61,42 +66,33 @@ var myChart = null;
 google.setOnLoadCallback(loaded);
 
 // Global variables I might find useful.
-var max_x = 8;
-var num_points = 101;
-var x = Array.apply(0, Array(num_points)).map(
-    function(_, i) { return max_x * i / (num_points - 1); });
-
-var independent = function(x1, x2) {
-  return (x1 == x2) ? 1.0 : 0.0;
-};
-
-function SquaredExponential(ell, sigma) {
-  return function(x1, x2) {
-    var corr = sigma * sigma * Math.exp(-Math.pow((x1 - x2) / ell, 2));
-    return corr + 0.000001 * sigma * sigma * independent(x1, x2);
-  };
-};
+var x = Sequence(0, 8, 101);
 
 function loaded() {
   independentChart = AnimatedChart(
-      DatasetGenerator(x, jStat(x).multiply(0), independent, 25),
+      DatasetGenerator(x, jStat(x).multiply(0), Independent(1), 25),
       'chart_independent',
-      'Independent datapoints (uncorrelated)');
-  google.visualization.events.addListener(
-      independentChart.chart, 'animationfinish', independentChart.draw);
+      'Independent datapoints (uncorrelated)',
+      google.visualization.ScatterChart);
+  independentChart.start();
+
+  expChart = AnimatedChart(
+      DatasetGenerator(x, jStat(x).multiply(0), Exponential(1, 1), 25),
+      'chart_exp',
+      'Exponential covariance');
+  expChart.start();
 
   SEChart = AnimatedChart(
       DatasetGenerator(x, jStat(x).multiply(0), SquaredExponential(1, 1), 25),
       'chart_SE',
       'Squared Exponential covariance');
-  google.visualization.events.addListener(
-      SEChart.chart, 'animationfinish', SEChart.draw);
+  SEChart.start();
 };
 </script>
 
 </div>
 <div id='source'>
-<a href='https://github.com/chiphogg/chogg_name/tree/master/content/gp_priors.pandoc'>
+<a href='https://github.com/chiphogg/chogg_name/tree/master/content/gp_priors/index.pandoc'>
 Page source on GitHub
 </a>
 </div>
