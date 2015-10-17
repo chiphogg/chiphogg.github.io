@@ -17,6 +17,18 @@ function CompactSupportCovarianceMatrix(N) {
   });
 }
 
+function OscillatingMatrix(n_indep, n_timesteps) {
+  var factor = 1.0 / Math.sqrt(n_indep);
+  return jStat.create(n_timesteps, 2 * n_indep, function(i, j) {
+    // The more independent points, the longer we go before repeating: note that
+    // max(t) = 2.0 * n_indep.
+    var t = 2.0 * i * n_indep / n_timesteps;
+    var trig_func = (j % 2 == 0) ? Math.sin : Math.cos;
+    var order = Math.floor(j / 2) + 1;
+    return trig_func(Math.PI * order * t / n_indep) / Math.sqrt(n_indep);
+  });
+}
+
 function DatasetGenerator(x, mu, kFunc, N_t) {
   var return_object = {};
 
@@ -42,7 +54,7 @@ function DatasetGenerator(x, mu, kFunc, N_t) {
   //
   // We add a small amount of noise on the diagonal to help computational
   // stability.
-  K = CovarianceMatrix(x, kFunc);
+  var K = CovarianceMatrix(x, kFunc);
   var U = jStat.transpose(Cholesky(K));
 
   return_object.NextDataset = function() {
@@ -59,6 +71,129 @@ function DatasetGenerator(x, mu, kFunc, N_t) {
     return new_data;
   }
 
+  return_object.UpdateCovariance = function(kFunc) {
+    var K = CovarianceMatrix(x, kFunc);
+    U = jStat.transpose(Cholesky(K));
+  }
+
+  return return_object;
+};
+
+function HennigGenerator(x, mu, kFunc, N_t) {
+  return OscillatingGeneratorBase(x, mu, kFunc, N_t, 1, true);
+}
+
+function OscillatingGenerator(x, mu, kFunc, N_t, N_indep) {
+  return OscillatingGeneratorBase(x, mu, kFunc, N_t, N_indep, false);
+}
+
+function OscillatingGeneratorBase(x, mu, kFunc, N_t, N_indep, lock_magnitude) {
+  var return_object = {};
+
+  // First section: declare member variables for the closure.
+  //
+  // The x-values for this closure.
+  return_object.x = x;
+  // The number of timesteps from one "independent" frame to the next.
+  var N_t = N_t;
+  // The number of points in the dataset.
+  var N = x.length;
+  // The "time" between frames.
+  var dt = 1.0 / N_t;
+  // The matrix to convert random noise into oscillating timetraces.
+  var n_timesteps = N_indep * N_t;
+  var M = OscillatingMatrix(N_indep, n_timesteps);
+  // Random data we'll use to seed the animation.
+  var random_matrix = jStat(M).multiply(
+      jStat.create(2 * N_indep, N, function(i, j) {
+        return jStat.normal.sample(0, 1);
+      }));
+  // Passing lock_magnitude == true and N_indep == 1 means we should make this
+  // into Hennig's method, where orbits are constrained to be circular.  We do
+  // this by giving the second row of random draws the same magnitude as the
+  // first.
+  if (lock_magnitude && N_indep == 1) {
+    for (var a = 0; a < N; ++a) {
+      random_matrix[1][a] = random_matrix[0][a];
+    }
+  }
+
+  // The covariance matrix in space.
+  K = CovarianceMatrix(x, kFunc);
+  var U = jStat.transpose(Cholesky(K));
+
+  var i = n_timesteps - 1;
+
+  return_object.NextDataset = function() {
+    // Compute the next data.
+    var independent_data = random_matrix[i];
+    // Update the counter.
+    i = ((i > 0) ? i : n_timesteps) - 1
+    // Return the next dataset.
+    var new_data = jStat(independent_data).multiply(U)[0];
+    return new_data;
+  }
+
+  return_object.UpdateCovariance = function(kFunc) {
+    var K = CovarianceMatrix(x, kFunc);
+    U = jStat.transpose(Cholesky(K));
+  }
+
+  return return_object;
+};
+
+function InterpolatingGenerator(x, mu, kFunc, N_t) {
+  var return_object = {};
+
+  // First section: declare member variables for the closure.
+  //
+  // The x-values for this closure.
+  return_object.x = x;
+  // The number of timesteps from one "independent" frame to the next.
+  var N_t = N_t;
+  // The number of points in the dataset.
+  var N = x.length;
+  // Random data we'll use to seed the animation.
+  var random_matrix = jStat.create(2, N, function(i, j) {
+    return jStat.normal.sample(0, 1);
+  });
+
+  // The covariance matrix in space.
+  K = CovarianceMatrix(x, kFunc);
+  var U = jStat.transpose(Cholesky(K));
+
+  // The number of timesteps after a keyframe.
+  var i = 0;
+  // Which row is the "primary" row.
+  var row = 0;
+  // A coefficient matrix to mix the keyframes.
+  var coefficients = jStat.create(1, 2, function(i, j) { return 0; });
+
+  return_object.NextDataset = function() {
+    var frac = i / N_t;
+    // Compute the next data.
+    coefficients[row    ] = Math.cos(Math.PI * frac / 2.0);
+    coefficients[1 - row] = Math.sin(Math.PI * frac / 2.0);
+    var independent_data = jStat(coefficients).multiply(random_matrix)[0];
+    var new_data = jStat(independent_data).multiply(U)[0];
+    // Update the counter.
+    i++;
+    if (i == N_t) {
+      for (var j = 0; j < N; ++j) {
+        random_matrix[row][j] = jStat.normal.sample(0, 1);
+      }
+      i = 0;
+      row = 1 - row;
+    }
+    // Return the next dataset.
+    return new_data;
+  }
+
+  return_object.UpdateCovariance = function(kFunc) {
+    var K = CovarianceMatrix(x, kFunc);
+    U = jStat.transpose(Cholesky(K));
+  }
+
   return return_object;
 };
 
@@ -69,7 +204,7 @@ function AnimatedChart(dataset_generator, div_id, title, chart_type, options) {
   // The generator which generates new datasets.
   var generator = dataset_generator;
   // The number of milliseconds for each frame.
-  var frame_length = 200;
+  var frame_length = 250;
   // Copy the x-values for the data.
   var x = generator.x.slice();
 
@@ -114,6 +249,10 @@ function AnimatedChart(dataset_generator, div_id, title, chart_type, options) {
       data.setValue(i, 1, new_data[i]);
     }
   };
+
+  return_object.UpdateCovariance = function(k) {
+    generator.UpdateCovariance(k);
+  }
 
   // Functions to start and stop the animations.
   var listener_id = null;
