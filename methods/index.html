@@ -73,7 +73,10 @@ Animated visualizations of Gaussian Process priors
 </div>
 <p>The resulting function does not journey from one discrete keyframe to the next, nor does it repeat its position indefinitely. Rather, it simply evolves. It takes a smooth, beautiful path through <span class="math inline">\(N\)</span>-dimensional space, exploring more and more of the distribution as time goes on. The viewer of this function can understand the distribution it represents simply by watching it move.</p>
 <h2 id="other-distributions">Other distributions</h2>
-<p>Of course, we could have visualized other distributions too. On this page, press <code>e</code> to see an Exponential distribution, and <code>m</code> to see a Matern (<span class="math inline">\(\nu = 3/2\)</span>). (You can also press <code>s</code> to go back to the original Squared Exponential distribution.)</p>
+<p>Of course, we could have visualized other distributions too.</p>
+<p>For example, consider the <a href="https://en.wikipedia.org/wiki/Mat%C3%A9rn_covariance_function">family of Matérn covariance functions</a>. They are categorized by an additional hyperparameter <span class="math inline">\(\nu\)</span>, which <a href="http://ml.dcs.shef.ac.uk/gpip/slides/rasmussen.pdf">governs the degree of smoothness</a>. The <span class="math inline">\(\nu = \frac{1}{2}\)</span> case is equivalent to the Exponential covariance, while <span class="math inline">\(\nu \rightarrow \infty\)</span> is equivalent to the Squared Exponential covariance we've been visualizing above.</p>
+<p>On this page, you can change the covariance on the fly to see how different members of the Matérn family behave. Pressing <code>1</code> will show the <span class="math inline">\(\nu = \frac{1}{2}\)</span> case (i.e., the exponential). <code>2</code> will show <span class="math inline">\(\nu = \frac{3}{2}\)</span>, <code>3</code> will show <span class="math inline">\(\nu = \frac{5}{2}\)</span>, and <code>4</code> will return to the Squared Exponential (<span class="math inline">\(\nu \rightarrow \infty\)</span>) we've already been visualizing.</p>
+<p>I particularly recommend going up and down the &quot;ladder&quot; -- going from 1 up to 3, and back -- to get a feel for the effect of <span class="math inline">\(\nu\)</span>. The functions are fairly similar, but more (1) or less (3) jaggy.</p>
 <p>Happy viewing!</p>
 <script type='text/javascript'>
 // Load the Visualization API.
@@ -119,14 +122,17 @@ handleKeyPress = function(e) {
   e = e || window.event;
   var k;
   switch (String.fromCharCode(e.keyCode)) {
-    case 's':
-      k = SquaredExponential(1, 1);
-      break;
-    case 'e':
+    case '1':
       k = Exponential(1, 1);
       break;
-    case 'm':
+    case '2':
       k = Matern3v2(1, 1);
+      break;
+    case '3':
+      k = Matern5v2(1, 1);
+      break;
+    case '4':
+      k = SquaredExponential(1, 1);
       break;
     default:
       return;
