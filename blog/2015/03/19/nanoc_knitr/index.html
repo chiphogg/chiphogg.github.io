@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <link rel="stylesheet" href="/style.css">
-<link href='http://fonts.googleapis.com/css?family=Scada' rel='stylesheet' type='text/css'>
-<link href='http://fonts.googleapis.com/css?family=Oranienbaum' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Scada' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Merriweather+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Oranienbaum' rel='stylesheet' type='text/css'>
 
 <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 <!--Load the AJAX API-->
@@ -17,7 +18,7 @@
   ga('create', 'UA-47801434-1', 'chogg.name');
   ga('send', 'pageview');
 </script>
-<meta content='nanoc 3.7.3' name='generator'>
+<meta content='nanoc 3.8.0' name='generator'>
 <title>
 Transparent, reproducible blogging with nanoc and knitr
 [Charles R. Hogg III]
@@ -83,7 +84,7 @@ When I write R code in my blog posts, nanoc runs it and includes the results in 
 <p>Fortunately, knitr has an option called <code>base.dir</code> which controls where the figures end up. Getting the figures right is as simple as <a href="https://github.com/chiphogg/chogg_name/blob/8fd1187c2cf688ec115a99a0afd04ae4f21004f3/lib/default.rb#L42-L43">setting this option to the appropriate directory for the current post</a>.</p>
 <p>Don't be confused by the similarly-named <code>root.dir</code> option! For purposes of getting the figures to work, it's a complete red herring.</p>
 <h2 id="a-simple-example">A simple example</h2>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Fix the seed for the random number generator (for reproducibility).</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Fix the seed for the random number generator (for reproducibility).</span>
 <span class="kw">set.seed</span>(<span class="dv">1</span>)
 
 <span class="co"># Let's generate 200 pairs of random numbers.</span>
@@ -102,9 +103,10 @@ d &lt;-<span class="st"> </span><span class="kw">data.frame</span>(random_number
 <span class="kw">print</span>(<span class="kw">ggplot</span>(<span class="dt">data=</span>d, <span class="kw">aes</span>(<span class="dt">x=</span>x, <span class="dt">y=</span>y))
       +<span class="st"> </span><span class="kw">geom_point</span>()
       +<span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">"A pointless, point-filled plot"</span>)
-      )</code></pre>
+      )</code></pre></div>
 <div class="figure">
-<img src="correlated_scatterplot.png">
+<img src="correlated_scatterplot-1.png" alt="">
+
 </div>
 <h2 id="join-the-fun">Join the fun!</h2>
 <p>I am far from the first to advocate and implement reproducible research in blogging. For example, <a href="http://www.carlboettiger.info/">Carl Boettiger</a> has maintained an <a href="http://www.carlboettiger.info/2012/09/28/Welcome-to-my-lab-notebook.html">open lab notebook</a> for years, and I'm sure there are many other examples which I haven't yet seen.</p>

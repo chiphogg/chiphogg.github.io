@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <link rel="stylesheet" href="/style.css">
-<link href='http://fonts.googleapis.com/css?family=Scada' rel='stylesheet' type='text/css'>
-<link href='http://fonts.googleapis.com/css?family=Oranienbaum' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Scada' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Merriweather+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Oranienbaum' rel='stylesheet' type='text/css'>
 
 <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 <!--Load the AJAX API-->
@@ -17,7 +18,7 @@
   ga('create', 'UA-47801434-1', 'chogg.name');
   ga('send', 'pageview');
 </script>
-<meta content='nanoc 3.7.3' name='generator'>
+<meta content='nanoc 3.8.0' name='generator'>
 <title>
 Stumbling upon simplicity: the Cholesky decomposition
 [Charles R. Hogg III]
@@ -57,26 +58,27 @@ Posted at 2015-03-30 23:06
 Sometimes things only seem complicated because we've never taken the time to play with them. Once I stopped treating the Cholesky decomposition as a black box, I found that it was surprisingly easy to compute.
 </aside>
 <article>
-<p>The <a href="http://en.wikipedia.org/wiki/Cholesky_decomposition">Cholesky decomposition</a> is a key concept in matrix algebra. It's a kind of "matrix square root": a lower-triangular matrix <span class="math">\(L\)</span> which gives back the original matrix <span class="math">\(K\)</span> when multiplied with its transpose: <span class="math">\[L L^\intercal = K.\]</span></p>
-<p>It's very useful for working with high-dimensional Gaussian distributions. <span class="math">\(L\)</span> takes independent one-dimensional Gaussian samples (i.e., the simplest possible case), and turns them into samples from the multidimensional distribution whose covariance matrix is <span class="math">\(K\)</span>.</p>
-<p>For example, take the highly-correlated matrix <span class="math">\[K = \left[\begin{array}{cc}1 &amp; 0.8 \\ 0.8 &amp; 1\end{array}\right].\]</span> Its Cholesky decomposition is <span class="math">\[L = \left[\begin{array}{cc}1 &amp; 0 \\ 0.8 &amp; 0.6\end{array}\right],\]</span> as we can easily verify: <span class="math">\[L L^\intercal = \left[\begin{array}{cc}1 &amp; 0 \\ 0.8 &amp; 0.6\end{array}\right] \left[\begin{array}{cc}1 &amp; 0.8 \\ 0 &amp; 0.6\end{array}\right] = \left[\begin{array}{cc}1 &amp; 0.8 \\ 0.8 &amp; 1\end{array}\right] = K.\]</span> If we now use <span class="math">\(L\)</span> to multiply <em>independent</em> normal samples, it turns them into <em>correlated</em> samples with a correlation of 0.8.</p>
-<pre class="sourceCode r"><code class="sourceCode r">num_points &lt;-<span class="st"> </span><span class="dv">200</span>
+<p>The <a href="http://en.wikipedia.org/wiki/Cholesky_decomposition">Cholesky decomposition</a> is a key concept in matrix algebra. It's a kind of "matrix square root": a lower-triangular matrix <span class="math inline">\(L\)</span> which gives back the original matrix <span class="math inline">\(K\)</span> when multiplied with its transpose: <span class="math display">\[L L^\intercal = K.\]</span></p>
+<p>It's very useful for working with high-dimensional Gaussian distributions. <span class="math inline">\(L\)</span> takes independent one-dimensional Gaussian samples (i.e., the simplest possible case), and turns them into samples from the multidimensional distribution whose covariance matrix is <span class="math inline">\(K\)</span>.</p>
+<p>For example, take the highly-correlated matrix <span class="math display">\[K = \left[\begin{array}{cc}1 &amp; 0.8 \\ 0.8 &amp; 1\end{array}\right].\]</span> Its Cholesky decomposition is <span class="math display">\[L = \left[\begin{array}{cc}1 &amp; 0 \\ 0.8 &amp; 0.6\end{array}\right],\]</span> as we can easily verify: <span class="math display">\[L L^\intercal = \left[\begin{array}{cc}1 &amp; 0 \\ 0.8 &amp; 0.6\end{array}\right] \left[\begin{array}{cc}1 &amp; 0.8 \\ 0 &amp; 0.6\end{array}\right] = \left[\begin{array}{cc}1 &amp; 0.8 \\ 0.8 &amp; 1\end{array}\right] = K.\]</span> If we now use <span class="math inline">\(L\)</span> to multiply <em>independent</em> normal samples, it turns them into <em>correlated</em> samples with a correlation of 0.8.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">num_points &lt;-<span class="st"> </span><span class="dv">200</span>
 independent_random &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dt">nrow=</span><span class="dv">2</span>, <span class="kw">rnorm</span>(<span class="dt">n=</span><span class="dv">2</span> *<span class="st"> </span>num_points))
-correlated_random &lt;-<span class="st"> </span>L %*%<span class="st"> </span>independent_random</code></pre>
+correlated_random &lt;-<span class="st"> </span>L %*%<span class="st"> </span>independent_random</code></pre></div>
 <div class="figure">
-<img src="correlated_plot.png">
+<img src="correlated_plot-1.png" alt="">
+
 </div>
-<p>What's missing in the above is any notion of how to <em>calculate</em> <span class="math">\(L\)</span>, given <span class="math">\(K\)</span>. If we have a good software library, we can just use it, and treat this calculation as a black box. But if we want to dig deeper, we're in luck: it turns out we already have enough information to compute it from scratch.</p>
+<p>What's missing in the above is any notion of how to <em>calculate</em> <span class="math inline">\(L\)</span>, given <span class="math inline">\(K\)</span>. If we have a good software library, we can just use it, and treat this calculation as a black box. But if we want to dig deeper, we're in luck: it turns out we already have enough information to compute it from scratch.</p>
 <p>Everything here is elementary, and I'm sure it's quite well known. I'm only blogging it to share my utter delight when I stumbled across its underlying simplicity.</p>
 <h2 id="adding-one-more-row">Adding "one more row"</h2>
-<p>In the appendix for <a href="https://github.com/chiphogg/paper_gaussian_oscillators">my animation paper</a>, I asked the question: given <span class="math">\(n\)</span> draws from a Gaussian with a particular covariance function, can we efficiently compute the <span class="math">\((n+1)\)</span>st?</p>
-<p>If we have the first <span class="math">\(n\)</span> draws, that means we have their covariance matrix <span class="math">\(K_n\)</span> and its Cholesky decomposition <span class="math">\(L_n\)</span>, so that <span class="math">\(L_n L_n^\intercal = K_n\)</span>. We also have the covariance of every old point with the new point, a vector we'll call <span class="math">\(k_n\)</span>, as well as the new point's variance <span class="math">\(\sigma_{n + 1}^2\)</span>. Together, these form the new covariance matrix<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>, <span class="math">\[ K_{n + 1} =
+<p>In the appendix for <a href="https://github.com/chiphogg/paper_gaussian_oscillators">my animation paper</a>, I asked the question: given <span class="math inline">\(n\)</span> draws from a Gaussian with a particular covariance function, can we efficiently compute the <span class="math inline">\((n+1)\)</span>st?</p>
+<p>If we have the first <span class="math inline">\(n\)</span> draws, that means we have their covariance matrix <span class="math inline">\(K_n\)</span> and its Cholesky decomposition <span class="math inline">\(L_n\)</span>, so that <span class="math inline">\(L_n L_n^\intercal = K_n\)</span>. We also have the covariance of every old point with the new point, a vector we'll call <span class="math inline">\(k_n\)</span>, as well as the new point's variance <span class="math inline">\(\sigma_{n + 1}^2\)</span>. Together, these form the new covariance matrix<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>, <span class="math display">\[ K_{n + 1} =
 \left[\begin{array}{cc}
 K_n &amp; k_n \\
 k_n^\intercal &amp; \sigma_{n + 1}^2
 \end{array}\right]
 \]</span></p>
-<p>What we <em>need</em> is the new row that makes <span class="math">\(L_n\)</span> into <span class="math">\(L_{n + 1}\)</span>, where <span class="math">\(L_{n + 1} L_{n + 1}^\intercal = K_{n + 1}\)</span>. We can break this row into two pieces: a vector <span class="math">\(\ell_n^\intercal\)</span> (corresponding to contributions from all the old points), and a scalar <span class="math">\(\gamma_{n + 1}\)</span> (corresponding to the new point). This gives us a block matrix equation: <span class="math">\[
+<p>What we <em>need</em> is the new row that makes <span class="math inline">\(L_n\)</span> into <span class="math inline">\(L_{n + 1}\)</span>, where <span class="math inline">\(L_{n + 1} L_{n + 1}^\intercal = K_{n + 1}\)</span>. We can break this row into two pieces: a vector <span class="math inline">\(\ell_n^\intercal\)</span> (corresponding to contributions from all the old points), and a scalar <span class="math inline">\(\gamma_{n + 1}\)</span> (corresponding to the new point). This gives us a block matrix equation: <span class="math display">\[
 \left[\begin{array}{cc}
 L_n &amp; 0 \\
 \ell_n^\intercal &amp; \gamma_{n + 1}
@@ -91,18 +93,18 @@ k_n^\intercal &amp; \sigma_{n + 1}^2
 \end{array}\right]
 \]</span> What interesting equations fall out of this?</p>
 <ol style="list-style-type: decimal">
-<li><span class="math">\(L_n L_n^\intercal = K_n\)</span></li>
+<li><span class="math inline">\(L_n L_n^\intercal = K_n\)</span></li>
 </ol>
 <ul>
 <li>Well, we knew that already.</li>
 </ul>
 <ol start="2" style="list-style-type: decimal">
-<li><span class="math">\(L_n \ell_n = k_n\)</span></li>
+<li><span class="math inline">\(L_n \ell_n = k_n\)</span></li>
 </ol>
 <ul>
 <li>
-<p>Now, this looks promising! <span class="math">\(L_n\)</span> and <span class="math">\(k_n\)</span> are known, so we can solve for <span class="math">\(\ell_n\)</span>.</p>
-<p>It gets better: remember that <span class="math">\(L_n\)</span> is lower-triangular, so the equation looks something like this: <span class="math">\[
+<p>Now, this looks promising! <span class="math inline">\(L_n\)</span> and <span class="math inline">\(k_n\)</span> are known, so we can solve for <span class="math inline">\(\ell_n\)</span>.</p>
+<p>It gets better: remember that <span class="math inline">\(L_n\)</span> is lower-triangular, so the equation looks something like this: <span class="math display">\[
 \left[\begin{array}{cccc}
 L_{11} &amp; 0 &amp; 0 &amp; \cdots \\
 L_{21} &amp; L_{22} &amp; 0 &amp; \cdots \\
@@ -121,35 +123,35 @@ k_2 \\
 k_3 \\
 \vdots
 \end{array}\right]
-\]</span> (Everything is known except the <span class="math">\(\ell\)</span>s.)</p>
-<p>In the first row, <span class="math">\(\ell_1\)</span> is the only unknown; we have <span class="math">\(\ell_1 = k_1 / L_{11}\)</span>. The second row uses only <span class="math">\(\ell_1\)</span> and <span class="math">\(\ell_2\)</span>, but we already solved for <span class="math">\(\ell_1\)</span>: again, only one unknown, which is easy to solve.</p>
-<p>Going down the line, we can solve for every element of <span class="math">\(\ell\)</span>, without even doing any matrix manipulations.</p>
+\]</span> (Everything is known except the <span class="math inline">\(\ell\)</span>s.)</p>
+<p>In the first row, <span class="math inline">\(\ell_1\)</span> is the only unknown; we have <span class="math inline">\(\ell_1 = k_1 / L_{11}\)</span>. The second row uses only <span class="math inline">\(\ell_1\)</span> and <span class="math inline">\(\ell_2\)</span>, but we already solved for <span class="math inline">\(\ell_1\)</span>: again, only one unknown, which is easy to solve.</p>
+<p>Going down the line, we can solve for every element of <span class="math inline">\(\ell\)</span>, without even doing any matrix manipulations.</p>
 </li>
 </ul>
 <ol start="3" style="list-style-type: decimal">
-<li><span class="math">\(\ell_n^\intercal \ell_n + \gamma_{n + 1}^2 = \sigma_{n + 1} ^ 2\)</span></li>
+<li><span class="math inline">\(\ell_n^\intercal \ell_n + \gamma_{n + 1}^2 = \sigma_{n + 1} ^ 2\)</span></li>
 </ol>
 <ul>
-<li>Since we already figured out <span class="math">\(\ell_n\)</span> above, and we know <span class="math">\(\sigma_{n + 1}\)</span>, this equation is just as easy as the previous ones.</li>
+<li>Since we already figured out <span class="math inline">\(\ell_n\)</span> above, and we know <span class="math inline">\(\sigma_{n + 1}\)</span>, this equation is just as easy as the previous ones.</li>
 </ul>
 <p>So: yes, we <em>can</em> compute the next row of the Cholesky decomposition if we know all the previous rows.</p>
 <h2 id="this-smells-like-induction">This smells like induction</h2>
-<p>We now know how to get <span class="math">\(L_{n + 1}\)</span> if we have <span class="math">\(L_n\)</span>, but how do we get <span class="math">\(L_n\)</span> in the first place? One way is to call a library function -- always a good default strategy. This works pretty well, until <a href="https://github.com/jstat/jstat/blob/b3a72f52917403e948f628dfebd645f8cb925c52/src/linearalgebra.js#L284-L286">it doesn't</a>.</p>
-<p>Another approach would be to start with <span class="math">\(L_{n - 1}\)</span>, and use what we just figured out to add the final row. Of course, then we'd <em>need</em> <span class="math">\(L_{n - 1}\)</span>, but we could get it from <span class="math">\(L_{n - 2}\)</span>...</p>
-<p>At this point, I'm reminded of <a href="http://en.wikipedia.org/wiki/Mathematical_induction">mathematical induction</a>: a method to generate "valid for any positive integer" proofs based on two ingredients. One ingredient is a method for getting from step <span class="math">\(n\)</span> to step <span class="math">\((n + 1)\)</span> for any <span class="math">\(n\)</span>; we have that already. The other ingredient is a <em>base case</em>: an answer for the smallest possible <span class="math">\(n\)</span> which <em>doesn't</em> depend on any earlier stages.</p>
-<p>In our case, the base case turns out to be trivial. The simplest matrix which could have a Cholesky decomposition is a <span class="math">\((1 \times 1)\)</span> matrix; let's say <span class="math">\(K = \left[ k \right]\)</span> for some <span class="math">\(k &gt; 0\)</span>. Then <span class="math">\(L = \left[ \sqrt{k} \right]\)</span> -- what could be easier!</p>
-<p>We can put this all together to compute the elements of <span class="math">\(L\)</span> one at a time. Each new element uses <span class="math">\(K\)</span> and the elements of <span class="math">\(L\)</span> we've <em>already</em> computed. Let's update our notation for consistency: we'll replace the <span class="math">\(\ell\)</span>s and <span class="math">\(k\)</span>s with the corresponding indices in <span class="math">\(L\)</span> and <span class="math">\(K\)</span>. The matrix equation for a typical intermediate stage looks like this: <span class="math">\[
+<p>We now know how to get <span class="math inline">\(L_{n + 1}\)</span> if we have <span class="math inline">\(L_n\)</span>, but how do we get <span class="math inline">\(L_n\)</span> in the first place? One way is to call a library function -- always a good default strategy. This works pretty well, until <a href="https://github.com/jstat/jstat/blob/b3a72f52917403e948f628dfebd645f8cb925c52/src/linearalgebra.js#L284-L286">it doesn't</a>.</p>
+<p>Another approach would be to start with <span class="math inline">\(L_{n - 1}\)</span>, and use what we just figured out to add the final row. Of course, then we'd <em>need</em> <span class="math inline">\(L_{n - 1}\)</span>, but we could get it from <span class="math inline">\(L_{n - 2}\)</span>...</p>
+<p>At this point, I'm reminded of <a href="http://en.wikipedia.org/wiki/Mathematical_induction">mathematical induction</a>: a method to generate "valid for any positive integer" proofs based on two ingredients. One ingredient is a method for getting from step <span class="math inline">\(n\)</span> to step <span class="math inline">\((n + 1)\)</span> for any <span class="math inline">\(n\)</span>; we have that already. The other ingredient is a <em>base case</em>: an answer for the smallest possible <span class="math inline">\(n\)</span> which <em>doesn't</em> depend on any earlier stages.</p>
+<p>In our case, the base case turns out to be trivial. The simplest matrix which could have a Cholesky decomposition is a <span class="math inline">\((1 \times 1)\)</span> matrix; let's say <span class="math inline">\(K = \left[ k \right]\)</span> for some <span class="math inline">\(k &gt; 0\)</span>. Then <span class="math inline">\(L = \left[ \sqrt{k} \right]\)</span> -- what could be easier!</p>
+<p>We can put this all together to compute the elements of <span class="math inline">\(L\)</span> one at a time. Each new element uses <span class="math inline">\(K\)</span> and the elements of <span class="math inline">\(L\)</span> we've <em>already</em> computed. Let's update our notation for consistency: we'll replace the <span class="math inline">\(\ell\)</span>s and <span class="math inline">\(k\)</span>s with the corresponding indices in <span class="math inline">\(L\)</span> and <span class="math inline">\(K\)</span>. The matrix equation for a typical intermediate stage looks like this: <span class="math display">\[
 \left[\begin{array}{cc}
   L_{11} &amp; 0 \\
   L_{21} &amp; L_{22}
 \end{array}\right]
 \left[\begin{array}{c} L_{31} \\ L_{32} \end{array}\right]
 = \left[ \begin{array}{c} K_{31} \\ K_{32} \end{array} \right]
-.\]</span> This gives us the "pre-diagonal" elements of the third row, <span class="math">\(L_{31}\)</span> and <span class="math">\(L_{32}\)</span>. We'll then get <span class="math">\(L_{33}\)</span> in terms of <span class="math">\(K_{33}\)</span> and these same pre-diagonal elements, and this gives us everything we'll need to compute the <em>fourth</em> row. So it goes, until we have the whole matrix.</p>
+.\]</span> This gives us the "pre-diagonal" elements of the third row, <span class="math inline">\(L_{31}\)</span> and <span class="math inline">\(L_{32}\)</span>. We'll then get <span class="math inline">\(L_{33}\)</span> in terms of <span class="math inline">\(K_{33}\)</span> and these same pre-diagonal elements, and this gives us everything we'll need to compute the <em>fourth</em> row. So it goes, until we have the whole matrix.</p>
 <p>I started out trying to extend existing Cholesky matrices, and I got the ability to compute <em>any</em> Cholesky matrix thrown in for free.</p>
 <h2 id="testing-it-out">Testing it out</h2>
 <p>Let's turn these ideas into actual code.</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># This doesn't check that K actually *has* a Cholesky decomposition (not every</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># This doesn't check that K actually *has* a Cholesky decomposition (not every</span>
 <span class="co"># matrix does).  Give it some garbage, and it will happily return a nonsense</span>
 <span class="co"># answer (if it doesn't crash first!).</span>
 <span class="co">#</span>
@@ -189,9 +191,9 @@ MyCholesky &lt;-<span class="st"> </span>function(K) {
     L[row, row] &lt;-<span class="st"> </span><span class="kw">sqrt</span>(K[row, row] -<span class="st"> </span>L[row, i] %*%<span class="st"> </span>L[row, i])
   }
   <span class="kw">return</span> (L)
-}</code></pre>
-<p>To test this, I'll construct a random <span class="math">\((20 \times 20)\)</span> covariance matrix. I'll compute its Cholesky decomposition twice -- once with my method, and once with R's built-in <code>chol()</code> function -- and see how close the two answers are.</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Generate some points.</span>
+}</code></pre></div>
+<p>To test this, I'll construct a random <span class="math inline">\((20 \times 20)\)</span> covariance matrix. I'll compute its Cholesky decomposition twice -- once with my method, and once with R's built-in <code>chol()</code> function -- and see how close the two answers are.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Generate some points.</span>
 x &lt;-<span class="st"> </span><span class="kw">sort</span>(<span class="kw">rnorm</span>(<span class="dt">n=</span>N))
 
 <span class="co"># Construct a matrix from a covariance function which I know is valid.</span>
@@ -203,15 +205,15 @@ K &lt;-<span class="st"> </span><span class="kw">outer</span>(x, x,
 
 <span class="co"># What are the biggest and smallest differences between my method,</span>
 <span class="co"># and R's built-in method I know is correct?</span>
-<span class="kw">range</span>(<span class="kw">MyCholesky</span>(K) -<span class="st"> </span><span class="kw">t</span>(<span class="kw">chol</span>(K)))</code></pre>
-<pre><code>## [1] -2.193e-15  2.665e-15</code></pre>
-<p>So the biggest difference was smaller than <span class="math">\(10^{-14}\)</span>. Looks pretty good to me!</p>
+<span class="kw">range</span>(<span class="kw">MyCholesky</span>(K) -<span class="st"> </span><span class="kw">t</span>(<span class="kw">chol</span>(K)))</code></pre></div>
+<pre><code>## [1] -2.192690e-15  2.664535e-15</code></pre>
+<p>So the biggest difference was smaller than <span class="math inline">\(10^{-14}\)</span>. Looks pretty good to me!</p>
 <h2 id="conclusions">Conclusions</h2>
 <p>Don't be intimidated by theorems with <a href="https://biostat-lists.wustl.edu/sympa/arc/s-news/2000-10/msg00172.html">hard to pronounce</a> names. They often contain extremely simple ideas.</p>
 <div class="footnotes">
 <hr>
 <ol>
-<li id="fn1"><p>Note that this is a <a href="http://en.wikipedia.org/wiki/Block_matrix">block matrix</a>: one whose elements stand for other matrices. Specifically, <span class="math">\(K_n\)</span> is an <span class="math">\((n \times n)\)</span> matrix; <span class="math">\(k_n\)</span> is <span class="math">\((n \times 1)\)</span> (i.e., a vector), and <span class="math">\(\sigma_{n + 1}^2\)</span> is <span class="math">\((1 \times 1)\)</span> (i.e., a scalar).<a href="#fnref1">↩</a></p></li>
+<li id="fn1"><p>Note that this is a <a href="http://en.wikipedia.org/wiki/Block_matrix">block matrix</a>: one whose elements stand for other matrices. Specifically, <span class="math inline">\(K_n\)</span> is an <span class="math inline">\((n \times n)\)</span> matrix; <span class="math inline">\(k_n\)</span> is <span class="math inline">\((n \times 1)\)</span> (i.e., a vector), and <span class="math inline">\(\sigma_{n + 1}^2\)</span> is <span class="math inline">\((1 \times 1)\)</span> (i.e., a scalar).<a href="#fnref1">↩</a></p></li>
 </ol>
 </div>
 
