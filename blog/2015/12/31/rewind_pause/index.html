@@ -1,0 +1,138 @@
+<!DOCTYPE HTML>
+<html lang='en'>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="/style.css">
+<link href='https://fonts.googleapis.com/css?family=Merriweather+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Oranienbaum' rel='stylesheet' type='text/css'>
+
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!--Load the AJAX API-->
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-47801434-1', 'chogg.name');
+  ga('send', 'pageview');
+</script>
+<meta content='nanoc 3.8.0' name='generator'>
+<title>
+Rewinding the "Pause"
+[Charles R. Hogg III]
+</title>
+</head>
+<body>
+<div id='title'>
+<a title="Main page" href="/">Charles R. Hogg III</a>
+<div id='nav'>
+<ul>
+<li>
+<a title="About the author, the website, etc." href="/about/">About</a>
+</li>
+<li>
+<a title="Personal blog" href="/blog/">Blog</a>
+</li>
+<li>
+<a title="Things I'm working on" href="/projects/">Projects</a>
+</li>
+<li>
+<a title="Ways to contact me online" href="/contact/">Contact</a>
+</li>
+</ul>
+</div>
+</div>
+<hr>
+<div id='main'>
+<div id='post'>
+<h1>
+Rewinding the "Pause"
+</h1>
+<aside class='posted_at'>
+Posted at 2015-12-31 17:14
+</aside>
+<aside class='tldr'>
+<b>tl;dr:</b>
+The idea that "global warming stopped 18 years ago" is based on a broken model.  When we fix it, we find the "pause" in the RSS data is more like 11 years -- which is well within the range of natural variability.
+</aside>
+<article>
+<p>The global warming "pause" means different things to different people.</p>
+<ul>
+<li>Have the climate models overestimated the recent warming?</li>
+<li>Has global warming slowed down?</li>
+<li>Has global warming <em>stopped</em>?</li>
+</ul>
+<p>All these questions are interesting and important, but this post will focus only on the last one.</p>
+<p>Climate skeptic <a href="http://www.climatedepot.com/2015/11/04/no-global-warming-at-all-for-18-years-9-months-a-new-record-the-pause-lengthens-again-just-in-time-for-un-summit-in-paris/">Christopher Monckton claims</a> that global warming stopped more than 18 years ago. He bases this claim on a satellite temperature dataset from the Remote Sensing Systems company ("RSS" for short). Scientists have responded in various ways. One explanation is that lately, more heat has been going into the ocean instead of the atmosphere. Another is that other, land-based datasets (which do not show such an extended pause) more accurately reflect reality.</p>
+<p>These sophisticated responses can be hard to evaluate without expert domain knowledge. Here, I'll take a different approach: I'll look directly at the RSS data, taking them at face value for this post.</p>
+<p>It turns out that these data do <em>not</em> show an 18-year pause. The model that says they do is broken: to get the 18 warming-free years, it implicitly <em>crams 18 years' worth of warming into a single instantaneous jump</em>.</p>
+<p>Fortunately, the model is easy to fix. When we do, we find an apparent pause of 11 years and 6 months. This is short enough to be explained by natural variability, which means that any talk of a "global warming stopped" pause is at best premature.</p>
+<p>But let's begin by looking at the raw data themselves.</p>
+<h2 id="the-raw-rss-data">The raw RSS data</h2>
+<div class="figure">
+<img src="bare_rss-1.png" alt="">
+
+</div>
+<p>These data fluctuate -- a <em>lot</em>. The fluctuations represent actual physical events, but for our purposes they're just noise: we're looking for underlying <em>trends</em> in the data.</p>
+<p>Not much is clear at first glance. Maybe the later temperatures are overall higher than the earlier data? It's hard to be sure by eyeball: what we need is a <em>model</em>.</p>
+<p>We'll try out different models in this post, using the standard <a href="https://en.wikipedia.org/wiki/Linear_least_squares_(mathematics)">linear least squares</a> technique to find the best fit in each case.</p>
+<h2 id="the-simplest-model-one-trendline">The simplest model: one trendline</h2>
+<p>One approach is to assume that a single, constant trend can describe the data. That trend is the <em>slope</em> of the line of best fit: here, we find 1.22°C / century.</p>
+<div class="figure">
+<img src="single_trendline-1.png" alt="">
+
+</div>
+<p>This model is exceedingly simple -- and that is its strength! More complicated models risk mistaking noise for signal. This phenomenon is called "overfitting", and we want to avoid it.</p>
+<p>Of course, the downside to a simple model is that it may be <em>too</em> simple to capture important changes.</p>
+<h2 id="the-next-model-let-the-trend-change">The next model: let the trend change</h2>
+<p>Suppose the underlying trend <em>changes</em>. Our model will still give an answer, but it will be wrong. We need a more sophisticated model to check whether the trend has changed.</p>
+<p>(Note that it is very important to be able to detect trendline changes. After all, changing the trend is <em>exactly what environmentalists are trying to do!</em>)</p>
+<p>In particular, Lord Monckton suspects that the trend has completely flattened (i.e., global warming has stopped). He looks for the longest stretch of time which yields a flat trend up to the present day, by the same method we used above (linear least squares). His answer is shockingly long: <em>no global warming for 18 years</em>!</p>
+<div class="figure">
+<img src="partial_disconnected-1.png" alt="">
+
+</div>
+<p>Actually, it's not <em>exactly</em> the same method; he has excluded the earlier dates. When we add them back in, we discover a flaw in this model.</p>
+<div class="figure">
+<img src="full_disconnected-1.png" alt="">
+
+</div>
+<p>We do see that the slope has changed (from 0.70°C to -0.00°C / century). But we also see something else: the temperature <em>instantaneously jumps</em><a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> by 0.22°C at the transition! This is not a small jump, either: it is equivalent to 18 years' worth of warming at the single-trendline rate of 1.22°C / century.</p>
+<p>So the 18-year "pause" really hides 18 years of warming in a single instant.</p>
+<h2 id="fixing-the-model-trendlines-done-right">Fixing the model: trendlines done <em>right</em>
+</h2>
+<p>Everybody agrees that the <em>real</em> temperature trend doesn't have any "jumps". So why not bake this assumption into the model?</p>
+<div class="figure">
+<img src="connected-1.png" alt="">
+
+</div>
+<p>The <em>improved</em> model still allows the trend to change; it just makes sure to <em>connect the trendlines</em>. We see that the warming is alive and well: 0.85°C / century.</p>
+<p>This is somewhat smaller than the average slope from the simplest model (1.22°C / century) However, it's actually <em>bigger</em> than the biggest slope from the disconnected model (0.70°C / century)! This is another effect of squeezing all the warming into a single instant. The model underestimates the warming <em>before</em> as well as after.</p>
+<h2 id="whats-the-longest-pause-with-the-fixed-model">What's the longest pause with the <em>fixed</em> model?</h2>
+<p>We can play the same game as Lord Monckton, but using the fixed version of his model. How far back can we go and find a zero-slope trendline <em>which connects to the previous trendline</em>?</p>
+<div class="figure">
+<img src="connected_pause-1.png" alt="">
+
+</div>
+<p>The answer: 11 years and 6 months. This is not completely negligible, but it's a lot shorter than 18 years and 9 months.</p>
+<p>In particular, it's now well within the range of what natural variability can explain. Judith Curry (a climate scientist with climate-skeptic leanings) <a href="http://judithcurry.com/2015/11/06/hiatus-controversy-show-me-the-data/">gives 17 years</a> as a threshold to rule out explanations based on natural variability. Since fixing the model has "rewound the pause", we are now well within that threshold. It looks like we'll need to wait at least 6 years before we can claim that global warming has stopped.</p>
+<p>Of course, that's only if the data continue to "cooperate". With 2015 <a href="https://www.washingtonpost.com/news/capital-weather-gang/wp/2015/10/21/after-record-shattering-september-2015-in-commanding-lead-for-earths-hottest-year-on-record/">shaping up to be a real scorcher</a>, I doubt we'll ever see a true pause (of this kind) materialize!</p>
+<div class="footnotes">
+<hr>
+<ol>
+<li id="fn1"><p>This unphysical temperature jump is implicit in other analyses (such as the <a href="http://www.skepticalscience.com/graphics.php?g=47">escalator animation</a>), but in this post I wanted to highlight it explicitly.<a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
+
+</article>
+</div>
+
+</div>
+<div id='source'>
+<a href='https://github.com/chiphogg/chogg_name/tree/master/content/blog/connect_your_trendlines/index.Rmd'>
+Page source on GitHub
+</a>
+</div>
+</body>
+</html>
