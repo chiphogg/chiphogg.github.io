@@ -17,7 +17,7 @@
   ga('create', 'UA-47801434-1', 'chogg.name');
   ga('send', 'pageview');
 </script>
-<meta content='nanoc 3.8.0' name='generator'>
+<meta content='nanoc 4.1.2' name='generator'>
 <title>
 Stumbling upon simplicity: the Cholesky decomposition
 [Charles R. Hogg III]
@@ -64,7 +64,7 @@ Sometimes things only seem complicated because we've never taken the time to pla
 independent_random &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dt">nrow=</span><span class="dv">2</span>, <span class="kw">rnorm</span>(<span class="dt">n=</span><span class="dv">2</span> *<span class="st"> </span>num_points))
 correlated_random &lt;-<span class="st"> </span>L %*%<span class="st"> </span>independent_random</code></pre></div>
 <div class="figure">
-<img src="correlated_plot-1.png" alt="">
+<img src="correlated_plot-1.png">
 
 </div>
 <p>What's missing in the above is any notion of how to <em>calculate</em> <span class="math inline">\(L\)</span>, given <span class="math inline">\(K\)</span>. If we have a good software library, we can just use it, and treat this calculation as a black box. But if we want to dig deeper, we're in luck: it turns out we already have enough information to compute it from scratch.</p>

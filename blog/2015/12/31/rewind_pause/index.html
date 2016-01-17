@@ -17,7 +17,7 @@
   ga('create', 'UA-47801434-1', 'chogg.name');
   ga('send', 'pageview');
 </script>
-<meta content='nanoc 3.8.0' name='generator'>
+<meta content='nanoc 4.1.2' name='generator'>
 <title>
 Rewinding the "Pause"
 [Charles R. Hogg III]
@@ -50,7 +50,7 @@ Rewinding the "Pause"
 Rewinding the "Pause"
 </h1>
 <aside class='posted_at'>
-Posted at 2015-12-31 17:14
+Posted at 2015-12-31 17:19
 </aside>
 <aside class='tldr'>
 <b>tl;dr:</b>
@@ -71,7 +71,7 @@ The idea that "global warming stopped 18 years ago" is based on a broken model. 
 <p>But let's begin by looking at the raw data themselves.</p>
 <h2 id="the-raw-rss-data">The raw RSS data</h2>
 <div class="figure">
-<img src="bare_rss-1.png" alt="">
+<img src="bare_rss-1.png">
 
 </div>
 <p>These data fluctuate -- a <em>lot</em>. The fluctuations represent actual physical events, but for our purposes they're just noise: we're looking for underlying <em>trends</em> in the data.</p>
@@ -80,7 +80,7 @@ The idea that "global warming stopped 18 years ago" is based on a broken model. 
 <h2 id="the-simplest-model-one-trendline">The simplest model: one trendline</h2>
 <p>One approach is to assume that a single, constant trend can describe the data. That trend is the <em>slope</em> of the line of best fit: here, we find 1.22°C / century.</p>
 <div class="figure">
-<img src="single_trendline-1.png" alt="">
+<img src="single_trendline-1.png">
 
 </div>
 <p>This model is exceedingly simple -- and that is its strength! More complicated models risk mistaking noise for signal. This phenomenon is called "overfitting", and we want to avoid it.</p>
@@ -90,12 +90,12 @@ The idea that "global warming stopped 18 years ago" is based on a broken model. 
 <p>(Note that it is very important to be able to detect trendline changes. After all, changing the trend is <em>exactly what environmentalists are trying to do!</em>)</p>
 <p>In particular, Lord Monckton suspects that the trend has completely flattened (i.e., global warming has stopped). He looks for the longest stretch of time which yields a flat trend up to the present day, by the same method we used above (linear least squares). His answer is shockingly long: <em>no global warming for 18 years</em>!</p>
 <div class="figure">
-<img src="partial_disconnected-1.png" alt="">
+<img src="partial_disconnected-1.png">
 
 </div>
 <p>Actually, it's not <em>exactly</em> the same method; he has excluded the earlier dates. When we add them back in, we discover a flaw in this model.</p>
 <div class="figure">
-<img src="full_disconnected-1.png" alt="">
+<img src="full_disconnected-1.png">
 
 </div>
 <p>We do see that the slope has changed (from 0.70°C to -0.00°C / century). But we also see something else: the temperature <em>instantaneously jumps</em><a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> by 0.22°C at the transition! This is not a small jump, either: it is equivalent to 18 years' worth of warming at the single-trendline rate of 1.22°C / century.</p>
@@ -104,7 +104,7 @@ The idea that "global warming stopped 18 years ago" is based on a broken model. 
 </h2>
 <p>Everybody agrees that the <em>real</em> temperature trend doesn't have any "jumps". So why not bake this assumption into the model?</p>
 <div class="figure">
-<img src="connected-1.png" alt="">
+<img src="connected-1.png">
 
 </div>
 <p>The <em>improved</em> model still allows the trend to change; it just makes sure to <em>connect the trendlines</em>. We see that the warming is alive and well: 0.85°C / century.</p>
@@ -112,7 +112,7 @@ The idea that "global warming stopped 18 years ago" is based on a broken model. 
 <h2 id="whats-the-longest-pause-with-the-fixed-model">What's the longest pause with the <em>fixed</em> model?</h2>
 <p>We can play the same game as Lord Monckton, but using the fixed version of his model. How far back can we go and find a zero-slope trendline <em>which connects to the previous trendline</em>?</p>
 <div class="figure">
-<img src="connected_pause-1.png" alt="">
+<img src="connected_pause-1.png">
 
 </div>
 <p>The answer: 11 years and 6 months. This is not completely negligible, but it's a lot shorter than 18 years and 9 months.</p>
