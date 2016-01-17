@@ -1,0 +1,109 @@
+<!DOCTYPE HTML>
+<html lang='en'>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="/style.css">
+<link href='https://fonts.googleapis.com/css?family=Merriweather+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Oranienbaum' rel='stylesheet' type='text/css'>
+
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!--Load the AJAX API-->
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-47801434-1', 'chogg.name');
+  ga('send', 'pageview');
+</script>
+<meta content='nanoc 4.1.2' name='generator'>
+<title>
+vim-syncopate
+[Charles R. Hogg III]
+</title>
+</head>
+<body>
+<div id='title'>
+<a title="Main page" href="/">Charles R. Hogg III</a>
+<div id='nav'>
+<ul>
+<li>
+<a title="About the author, the website, etc." href="/about/">About</a>
+</li>
+<li>
+<a title="Personal blog" href="/blog/">Blog</a>
+</li>
+<li>
+<a title="Things I'm working on" href="/projects/">Projects</a>
+</li>
+<li>
+<a title="Ways to contact me online" href="/contact/">Contact</a>
+</li>
+</ul>
+</div>
+</div>
+<hr>
+<div id='main'>
+<div id='project'>
+<h1>
+vim-syncopate
+</h1>
+<aside class='tldr'>
+Share beautiful code frictionlessly
+</aside>
+<article>
+<p>When we share code, it should be as readable as possible, i.e.:</p>
+<ul>
+<li>Syntax highlighted.</li>
+<li>Using a monospaced font.</li>
+</ul>
+<p>It should also be <em>frictionless</em>: fiddling with tools detracts from the flow state.</p>
+<p>Vim makes it easy to export part or all of your buffer, <em>including syntax highlighting</em>. The <code>:TOhtml</code> command generates an HTML version of your buffer's contents. You can copy it from a browser tab, and paste it into any HTML-aware editor (such as a Gmail message, a Google Doc, or a Google Groups post). The syntax highlighting comes along for the ride!</p>
+<p>Vim makes this easy... but not easy <em>enough</em>.</p>
+<ul>
+<li>You need to save the HTML file and open it in a browser.</li>
+<li>You need to select the text from the browser tab and copy it.</li>
+<li>You also need to delete the HTML file when you're done, so you don't litter your directories!</li>
+</ul>
+<h2 id="enter-syncopate.">Enter <a href="https://github.com/google/vim-syncopate#syncopate">syncopate</a>.</h2>
+<p><a href="https://github.com/google/vim-syncopate#syncopate"><code>syncopate</code></a> stands for <strong>syn</strong>tax <strong>co</strong>py-<strong>pa</strong>s<strong>te</strong>. It's all the convenience of <code>:TOhtml</code>, but none of the friction.</p>
+<p>First, select some code (or don't, if you want the whole buffer). Then call the <code>:SyncopateExportToClipboard</code> command. Syncopate will:</p>
+<ol style="list-style-type: decimal">
+<li>Change to the default colorscheme (which tends to look better on white backgrounds).</li>
+<li>Populate the clipboard with the (<em>syntax-highlighted!</em>) contents of your buffer.</li>
+<li>Restore your colorscheme settings.</li>
+</ol>
+<p>It gets even <em>more</em> frictionless if you <a href="https://github.com/google/vim-syncopate#use-the-clipboard-directly">enable mappings</a>. Let's say your <a href="http://stackoverflow.com/questions/1764263/what-is-the-leader-in-a-vimrc-file">&lt;Leader&gt;</a> is <code>,</code>. Then <code>,&lt;&gt;</code> (mnemonic: think of HTML tags) will export the entire file.</p>
+<p>Better yet, <code>syncopate</code> works with vim's <a href="http://blog.carbonfive.com/2011/10/17/vim-text-objects-the-definitive-guide/">text objects</a> to make it a breeze to grab just the area you want. That's right: <code>,&lt;ip</code> exports the current paragraph!</p>
+<h2 id="easy-to-configure">Easy to configure</h2>
+<p>There are two main ways to <a href="https://github.com/google/vim-syncopate#how-do-i-configure-it">configure <code>syncopate</code></a>.</p>
+<h3 id="generic-tohtml-options">Generic <code>:TOhtml</code> options</h3>
+<p>See <a href="http://vimdoc.sourceforge.net/htmldoc/syntax.html#:TOhtml">:help :TOhtml</a> and just start scrolling; the options (e.g., <code>g:html_no_progress</code>) are listed below.</p>
+<h3 id="syncopate-specific">syncopate-specific</h3>
+<p>Syncopate is a maktaba plugin, so it's easy to <a href="https://github.com/google/vim-glaive">configure it with Glaive</a>.</p>
+<p><code>:help syncopate-configure</code> gives a list of all the options. Here are a few examples.</p>
+<ul>
+<li>
+<code>change_colorscheme</code>: Set this to false to keep your current colorscheme, and export <em>exactly</em> what you see. (This is true by default because the default colorscheme works better on the white-ish backgrounds one commonly encounters in practice.)</li>
+<li>
+<code>clear_bg</code>: Setting this will output a <em>transparent</em> background. Useful when your colorscheme almost-but-not-quite matches the background of your slides -- or especially if those slides have a color gradient!</li>
+</ul>
+<p>So if you wanted to export your current colorscheme, except with a transparent background, you might use a line like this:</p>
+<pre class="vim"><code>Glaive syncopate !change_colorscheme clear_bg</code></pre>
+<p>This works in your <code>.vimrc</code>, or -- with tab-completion! -- on the fly in a live vim session.</p>
+<h2 id="so-whats-missing">So, what's missing?</h2>
+<p>Mac and Windows support.</p>
+<p><a href="https://github.com/google/vim-syncopate/blob/master/CONTRIBUTING.md">Contributions welcome</a>!</p>
+
+</article>
+</div>
+
+</div>
+<div id='source'>
+<a href='https://github.com/chiphogg/chogg_name/tree/master/content/projects/vim-syncopate.pandoc'>
+Page source on GitHub
+</a>
+</div>
+</body>
+</html>
