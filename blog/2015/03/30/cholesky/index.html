@@ -17,7 +17,7 @@
   ga('create', 'UA-47801434-1', 'chogg.name');
   ga('send', 'pageview');
 </script>
-<meta content='nanoc 4.7.8' name='generator'>
+<meta content='nanoc 4.8.10' name='generator'>
 <title>
 Stumbling upon simplicity: the Cholesky decomposition
 [Charles R. Hogg III]
@@ -57,12 +57,12 @@ Posted at 2015-03-30 23:06
 Sometimes things only seem complicated because we've never taken the time to play with them. Once I stopped treating the Cholesky decomposition as a black box, I found that it was surprisingly easy to compute.
 </aside>
 <article>
-<p>The <a href="http://en.wikipedia.org/wiki/Cholesky_decomposition">Cholesky decomposition</a> is a key concept in matrix algebra. It's a kind of "matrix square root": a lower-triangular matrix <span class="math inline">\(L\)</span> which gives back the original matrix <span class="math inline">\(K\)</span> when multiplied with its transpose: <span class="math display">\[L L^\intercal = K.\]</span></p>
+<p>The <a href="https://en.wikipedia.org/wiki/Cholesky_decomposition">Cholesky decomposition</a> is a key concept in matrix algebra. It's a kind of "matrix square root": a lower-triangular matrix <span class="math inline">\(L\)</span> which gives back the original matrix <span class="math inline">\(K\)</span> when multiplied with its transpose: <span class="math display">\[L L^\intercal = K.\]</span></p>
 <p>It's very useful for working with high-dimensional Gaussian distributions. <span class="math inline">\(L\)</span> takes independent one-dimensional Gaussian samples (i.e., the simplest possible case), and turns them into samples from the multidimensional distribution whose covariance matrix is <span class="math inline">\(K\)</span>.</p>
 <p>For example, take the highly-correlated matrix <span class="math display">\[K = \left[\begin{array}{cc}1 &amp; 0.8 \\ 0.8 &amp; 1\end{array}\right].\]</span> Its Cholesky decomposition is <span class="math display">\[L = \left[\begin{array}{cc}1 &amp; 0 \\ 0.8 &amp; 0.6\end{array}\right],\]</span> as we can easily verify: <span class="math display">\[L L^\intercal = \left[\begin{array}{cc}1 &amp; 0 \\ 0.8 &amp; 0.6\end{array}\right] \left[\begin{array}{cc}1 &amp; 0.8 \\ 0 &amp; 0.6\end{array}\right] = \left[\begin{array}{cc}1 &amp; 0.8 \\ 0.8 &amp; 1\end{array}\right] = K.\]</span> If we now use <span class="math inline">\(L\)</span> to multiply <em>independent</em> normal samples, it turns them into <em>correlated</em> samples with a correlation of 0.8.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">num_points &lt;-<span class="st"> </span><span class="dv">200</span>
-independent_random &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dt">nrow=</span><span class="dv">2</span>, <span class="kw">rnorm</span>(<span class="dt">n=</span><span class="dv">2</span> *<span class="st"> </span>num_points))
-correlated_random &lt;-<span class="st"> </span>L %*%<span class="st"> </span>independent_random</code></pre></div>
+independent_random &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dt">nrow=</span><span class="dv">2</span>, <span class="kw">rnorm</span>(<span class="dt">n=</span><span class="dv">2</span> <span class="op">*</span><span class="st"> </span>num_points))
+correlated_random &lt;-<span class="st"> </span>L <span class="op">%*%</span><span class="st"> </span>independent_random</code></pre></div>
 <div class="figure">
 <img src="correlated_plot-1.png">
 
@@ -137,7 +137,7 @@ k_3 \\
 <h2 id="this-smells-like-induction">This smells like induction</h2>
 <p>We now know how to get <span class="math inline">\(L_{n + 1}\)</span> if we have <span class="math inline">\(L_n\)</span>, but how do we get <span class="math inline">\(L_n\)</span> in the first place? One way is to call a library function -- always a good default strategy. This works pretty well, until <a href="https://github.com/jstat/jstat/blob/b3a72f52917403e948f628dfebd645f8cb925c52/src/linearalgebra.js#L284-L286">it doesn't</a>.</p>
 <p>Another approach would be to start with <span class="math inline">\(L_{n - 1}\)</span>, and use what we just figured out to add the final row. Of course, then we'd <em>need</em> <span class="math inline">\(L_{n - 1}\)</span>, but we could get it from <span class="math inline">\(L_{n - 2}\)</span>...</p>
-<p>At this point, I'm reminded of <a href="http://en.wikipedia.org/wiki/Mathematical_induction">mathematical induction</a>: a method to generate "valid for any positive integer" proofs based on two ingredients. One ingredient is a method for getting from step <span class="math inline">\(n\)</span> to step <span class="math inline">\((n + 1)\)</span> for any <span class="math inline">\(n\)</span>; we have that already. The other ingredient is a <em>base case</em>: an answer for the smallest possible <span class="math inline">\(n\)</span> which <em>doesn't</em> depend on any earlier stages.</p>
+<p>At this point, I'm reminded of <a href="https://en.wikipedia.org/wiki/Mathematical_induction">mathematical induction</a>: a method to generate "valid for any positive integer" proofs based on two ingredients. One ingredient is a method for getting from step <span class="math inline">\(n\)</span> to step <span class="math inline">\((n + 1)\)</span> for any <span class="math inline">\(n\)</span>; we have that already. The other ingredient is a <em>base case</em>: an answer for the smallest possible <span class="math inline">\(n\)</span> which <em>doesn't</em> depend on any earlier stages.</p>
 <p>In our case, the base case turns out to be trivial. The simplest matrix which could have a Cholesky decomposition is a <span class="math inline">\((1 \times 1)\)</span> matrix; let's say <span class="math inline">\(K = \left[ k \right]\)</span> for some <span class="math inline">\(k &gt; 0\)</span>. Then <span class="math inline">\(L = \left[ \sqrt{k} \right]\)</span> -- what could be easier!</p>
 <p>We can put this all together to compute the elements of <span class="math inline">\(L\)</span> one at a time. Each new element uses <span class="math inline">\(K\)</span> and the elements of <span class="math inline">\(L\)</span> we've <em>already</em> computed. Let's update our notation for consistency: we'll replace the <span class="math inline">\(\ell\)</span>s and <span class="math inline">\(k\)</span>s with the corresponding indices in <span class="math inline">\(L\)</span> and <span class="math inline">\(K\)</span>. The matrix equation for a typical intermediate stage looks like this: <span class="math display">\[
 \left[\begin{array}{cc}
@@ -160,7 +160,7 @@ k_3 \\
 <span class="co"># For this reason (and many others!), you shouldn't be using this algorithm in</span>
 <span class="co"># the real world: like the blog post it's part of, it's only good for improving</span>
 <span class="co"># your understanding of the concept.</span>
-MyCholesky &lt;-<span class="st"> </span>function(K) {
+MyCholesky &lt;-<span class="st"> </span><span class="cf">function</span>(K) {
   n &lt;-<span class="st"> </span><span class="kw">nrow</span>(K)
 
   <span class="co"># Start out with a matrix which is all zeroes, except for the upper-left</span>
@@ -168,26 +168,26 @@ MyCholesky &lt;-<span class="st"> </span>function(K) {
   <span class="co"># element in K, since that's the base case.)</span>
   L &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dv">0</span>, <span class="dt">nrow=</span>n, <span class="dt">ncol=</span>n)
   L[<span class="dv">1</span>, <span class="dv">1</span>] &lt;-<span class="st"> </span><span class="kw">sqrt</span>(K[<span class="dv">1</span>, <span class="dv">1</span>])
-  if (n ==<span class="st"> </span><span class="dv">1</span>) { <span class="kw">return</span>(L) }
+  <span class="cf">if</span> (n <span class="op">==</span><span class="st"> </span><span class="dv">1</span>) { <span class="kw">return</span>(L) }
 
   <span class="co"># Compute each row's values.</span>
-  for (row in <span class="dv">2</span>:n) {
+  <span class="cf">for</span> (row <span class="cf">in</span> <span class="dv">2</span><span class="op">:</span>n) {
     <span class="co"># This loop computes all the elements *before* the diagonal (which</span>
     <span class="co"># corresponds to step 2 above).</span>
-    for (col in <span class="dv">1</span>:(row -<span class="st"> </span><span class="dv">1</span>)) {
+    <span class="cf">for</span> (col <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>(row <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)) {
       <span class="co"># sum_to_subtract is the contribution of the elements we've previously</span>
       <span class="co"># computed in this new row.</span>
       sum_to_subtract &lt;-<span class="st"> </span><span class="dv">0</span>
-      if (col &gt;<span class="st"> </span><span class="dv">1</span>) {
-        i &lt;-<span class="st"> </span><span class="dv">1</span>:(col -<span class="st"> </span><span class="dv">1</span>)
-        sum_to_subtract &lt;-<span class="st"> </span>L[col, i] %*%<span class="st"> </span>L[row, i]
+      <span class="cf">if</span> (col <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>) {
+        i &lt;-<span class="st"> </span><span class="dv">1</span><span class="op">:</span>(col <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)
+        sum_to_subtract &lt;-<span class="st"> </span>L[col, i] <span class="op">%*%</span><span class="st"> </span>L[row, i]
       }
-      L[row, col] &lt;-<span class="st"> </span>(K[row, col] -<span class="st"> </span>sum_to_subtract) /<span class="st"> </span>L[col, col]
+      L[row, col] &lt;-<span class="st"> </span>(K[row, col] <span class="op">-</span><span class="st"> </span>sum_to_subtract) <span class="op">/</span><span class="st"> </span>L[col, col]
     }
     <span class="co"># Now compute the element on the main diagonal (corresponding to step 3</span>
     <span class="co"># above).</span>
-    i &lt;-<span class="st"> </span><span class="dv">1</span>:(row -<span class="st"> </span><span class="dv">1</span>)
-    L[row, row] &lt;-<span class="st"> </span><span class="kw">sqrt</span>(K[row, row] -<span class="st"> </span>L[row, i] %*%<span class="st"> </span>L[row, i])
+    i &lt;-<span class="st"> </span><span class="dv">1</span><span class="op">:</span>(row <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)
+    L[row, row] &lt;-<span class="st"> </span><span class="kw">sqrt</span>(K[row, row] <span class="op">-</span><span class="st"> </span>L[row, i] <span class="op">%*%</span><span class="st"> </span>L[row, i])
   }
   <span class="kw">return</span> (L)
 }</code></pre></div>
@@ -198,13 +198,13 @@ x &lt;-<span class="st"> </span><span class="kw">sort</span>(<span class="kw">rn
 <span class="co"># Construct a matrix from a covariance function which I know is valid.</span>
 <span class="co"># (We'll add some noise on the diagonal to help it converge).</span>
 K &lt;-<span class="st"> </span><span class="kw">outer</span>(x, x,
-           function(a, b) {
-             <span class="kw">exp</span>(-(a -<span class="st"> </span>b)^<span class="dv">2</span>) +<span class="st"> </span><span class="kw">ifelse</span>(a==b, <span class="fl">0.01</span>, <span class="fl">0.0</span>)
+           <span class="cf">function</span>(a, b) {
+             <span class="kw">exp</span>(<span class="op">-</span>(a <span class="op">-</span><span class="st"> </span>b)<span class="op">^</span><span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ifelse</span>(a<span class="op">==</span>b, <span class="fl">0.01</span>, <span class="fl">0.0</span>)
            })
 
 <span class="co"># What are the biggest and smallest differences between my method,</span>
 <span class="co"># and R's built-in method I know is correct?</span>
-<span class="kw">range</span>(<span class="kw">MyCholesky</span>(K) -<span class="st"> </span><span class="kw">t</span>(<span class="kw">chol</span>(K)))</code></pre></div>
+<span class="kw">range</span>(<span class="kw">MyCholesky</span>(K) <span class="op">-</span><span class="st"> </span><span class="kw">t</span>(<span class="kw">chol</span>(K)))</code></pre></div>
 <pre><code>## [1] -2.303713e-15  3.663736e-15</code></pre>
 <p>So the biggest difference was smaller than <span class="math inline">\(10^{-14}\)</span>. Looks pretty good to me!</p>
 <h2 id="conclusions">Conclusions</h2>
@@ -212,7 +212,7 @@ K &lt;-<span class="st"> </span><span class="kw">outer</span>(x, x,
 <div class="footnotes">
 <hr>
 <ol>
-<li id="fn1"><p>Note that this is a <a href="http://en.wikipedia.org/wiki/Block_matrix">block matrix</a>: one whose elements stand for other matrices. Specifically, <span class="math inline">\(K_n\)</span> is an <span class="math inline">\((n \times n)\)</span> matrix; <span class="math inline">\(k_n\)</span> is <span class="math inline">\((n \times 1)\)</span> (i.e., a vector), and <span class="math inline">\(\sigma_{n + 1}^2\)</span> is <span class="math inline">\((1 \times 1)\)</span> (i.e., a scalar).<a href="#fnref1">↩</a></p></li>
+<li id="fn1"><p>Note that this is a <a href="https://en.wikipedia.org/wiki/Block_matrix">block matrix</a>: one whose elements stand for other matrices. Specifically, <span class="math inline">\(K_n\)</span> is an <span class="math inline">\((n \times n)\)</span> matrix; <span class="math inline">\(k_n\)</span> is <span class="math inline">\((n \times 1)\)</span> (i.e., a vector), and <span class="math inline">\(\sigma_{n + 1}^2\)</span> is <span class="math inline">\((1 \times 1)\)</span> (i.e., a scalar).<a href="#fnref1">↩</a></p></li>
 </ol>
 </div>
 
