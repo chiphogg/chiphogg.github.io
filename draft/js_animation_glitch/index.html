@@ -1,0 +1,365 @@
+<!DOCTYPE HTML>
+<html lang='en'>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="/style.css">
+<link href='https://fonts.googleapis.com/css?family=Merriweather+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Oranienbaum' rel='stylesheet' type='text/css'>
+<script type='text/javascript' src='/assets/js/plotly.js'></script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!--Load the AJAX API-->
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-47801434-1', 'chogg.name');
+  ga('send', 'pageview');
+</script>
+<meta content='nanoc 4.8.10' name='generator'>
+<title>
+Scratch that glitch!
+[Charles R. Hogg III]
+</title>
+</head>
+<body>
+<div id='title'>
+<a title="Main page" href="/">Charles R. Hogg III</a>
+<div id='nav'>
+<ul>
+<li>
+<a title="About the author, the website, etc." href="/about/">About</a>
+</li>
+<li>
+<a title="Personal blog" href="/blog/">Blog</a>
+</li>
+<li>
+<a title="Things I'm working on" href="/projects/">Projects</a>
+</li>
+<li>
+<a title="Ways to contact me online" href="/contact/">Contact</a>
+</li>
+</ul>
+</div>
+</div>
+<hr>
+<div id='main'>
+<div id='post'>
+<h1>
+Scratch that glitch!
+</h1>
+<aside class='tldr'>
+<b>tl;dr:</b>
+A strangely reproducible glitch in my javascript animation code was driving me mad. Turns out, it’s a case where settings that are perfectly reasonable in isolation can interact very poorly.
+
+</aside>
+<article>
+<p>I’ve developed a new technique for using animations to convey uncertainty. I’m working on publishing a paper, but it won’t be enough by itself—after all, I can’t very well animate paper! So I’m making a companion website to show my animations in action.</p>
+<p>The first step is to find a good javascript plotting library. It needs to be able to handle a bunch of different kinds of plots (scatter plots, line plots, ribbon plots, 3D surfaces, maybe more), and animate them all smoothly. (Not to mention, it needs to be very easy to use: I’m not exactly a javascript expert!)</p>
+<p>One library stood out above the rest: <a href="https://plot.ly/javascript/">plot.ly</a>.</p>
+<p>It’s used as the (semi-?)official plotting library for <a href="https://ggplot2.tidyverse.org/">ggplot2</a>, my favourite graphing library for R, so I knew it would be able to handle any type of plot I could want. It also had <a href="https://plot.ly/javascript/animations/">a documented animation feature</a> that looked promising. In fact, its <a href="https://plot.ly/javascript/reference/">documentation</a> was generally very impressive and extensive. (If only I’d read it more carefully at the beginning!)</p>
+<h2 id="testing-out-plot.ly">Testing out plot.ly</h2>
+<p>I knew plot.ly could <em>produce</em> all the graph styles I needed. The main thing I needed to learn was whether it could <em>animate</em> them. Staying laser-focused on this question told me what I <em>didn’t</em> need.</p>
+<ul>
+<li>I <em>didn’t</em> need to code up my specialized animation technique.</li>
+<li>I <em>didn’t</em> even need my data to have <em>any meaning at all!</em>
+</li>
+<li>All I <em>did</em> need was a bunch of arbitrary data that changes over time.</li>
+</ul>
+<p>I cooked up some vaguely sine-wave-y traces as my data, and had them undergo decaying oscillations as my animation. Overall, I was pleasantly surprised how easy it was to get started. I soon felt satisfied that plot.ly would be able to meet my needs.</p>
+<h2 id="the-glitch-and-the-clues">The glitch and the clues</h2>
+<p>There was only one small problem. Every once in a while, the animation would go haywire between frames. I tried to ignore it at first, but soon realized it wasn’t going away. Here’s an example:</p>
+<div id="glitchy version" style="width:640px;height:400px;">
+
+</div>
+<p>It starts out fine, but after a few seconds, we get a keyframe that sweeps out a bit of area from right to left. Then it gets worse and worse—and when the animation restarts, it really goes crazy!</p>
+<p>This was really disheartening. I started looking for other plotting libraries, but couldn’t find any that came close to the feature set, documentation, and usability of plot.ly. This made me worry that I wouldn’t be able to make a website good enough to support my paper. Was I going to have to wait a few <em>more</em> years for someone to make the right plotting library? Or was javascript just a glitchy, unreliable language that would <em>never</em> give me what I need?</p>
+<p>Fortunately, I persisted. I kept turning the problem over in my mind. Before long, I noticed a few clues.</p>
+<ul>
+<li>The glitches only seemed to happen when a line got closer to being straight.</li>
+<li>The glitches were <em>remarkably</em> reproducible—they happened at exactly the same stage of the animation, in exactly the same way, every time.</li>
+</ul>
+<p>I realized that this wasn’t some random data corruption somewhere. Instead, it had to be executing a deterministic, reproducible algorithm. This reproucibility—and the targeted, linear motion in the glitches—made me suspect some kind of <em>object constancy</em> bug.</p>
+<h2 id="object-constancy-crash-course">Object constancy crash course</h2>
+<p>Graph animations are based on <em>keyframes</em>. We start out with one set of data, specify the next set, and ask the plotting library to fill in all the intermediate states.</p>
+<p>The goal is to create the illusion that the datapoints are <em>objects that move</em>. To do this, we need to know which datapoints in the first frame are “the same” as the datapoints in the next frame. Associating points in different frames is known as “object constancy”.</p>
+<p>It may seem perfectly obvious which points correspond to which, but this is far from true. If we take exactly the same keyframes—i.e., the same <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> values—but use different ideas of object constancy, it completely changes the animation!</p>
+<p>Here’s an example. We’ll take a simple sinusoidal wave undergoing periodic motion.</p>
+<p>First, we’ll say that datapoints are “the same” if they have the same <span class="math inline">\(x\)</span>-value:</p>
+<div id="x-association: vertical motion" style="width:640px;height:300px;">
+
+</div>
+<p>This yields a simple vertical motion for each datapoint. It gives the impression of a rope being waved up and down (albeit rather slowly!).</p>
+<p>But this is not the only possible notion of object constancy. Now, let’s say that datapoints are “the same” if they have the same <span class="math inline">\(y\)</span>-value:</p>
+<div id="y-association: horizontal motion" style="width:640px;height:300px;">
+
+</div>
+<p>This gives a rather different impression! Instead of a rope being waved up and down, we have a <em>rigid shape</em> moving to the right (except for the final point, which must zip back to the start each time).</p>
+<p><em>Note that the data <strong>at</strong> the keyframes are <strong>identical</strong>.</em> (Every time the motion pauses, the graphs look the same.) The only thing that has changed is our notion of which datapoint in the <em>new</em> keyframe is “the same” as each datapoint in the old one.</p>
+<p>To drive home this point even further, let’s base our object constancy on a <em>completely random</em> association:</p>
+<div id="random association: random motion" style="width:640px;height:300px;">
+
+</div>
+<p>Again: the keyframes are still the same! Every time the motion pauses, we can see that it’s the same shape as the other graphs, and the shape ultimately changes in the same way. But <em>between</em> those keyframes, the datapoints play musical chairs, and the motion is wild and disordered.</p>
+<p>This last example is very suggestive: its scrambled motions are reminiscent of the jerky glitches I was seeing. So, I decided to get explicit about object constancy. I gave each datapoint an ID, kept constant from frame to frame. Surely, the plotting library could keep things lined up if I spelled it out?</p>
+<p>Nope. Adding IDs made <em>no difference at all</em> to the behaviour. Not only did I still get a glitch, but it was the <em>exact same glitch!</em></p>
+<h2 id="you-cant-id-points-that-dont-exist">You can’t ID points that don’t exist</h2>
+<p>The next step wasn’t obvious, but eventually, I did figure it out. It has to do with a feature called “simplification”. Here’s how it works.</p>
+<p>Say our plot has 3 points in a row, and call them <code>A</code>, <code>B</code>, and <code>C</code>. If they fall close to a straight line, then drawing <code>A---B---C</code> would be <em>pretty similar</em> to drawing <code>A-------C</code>: you could cut out <code>B</code>, and save a point! This is what plot.ly’s <code>simplify</code> option does: it looks for points that it can remove without changing the shape much. Presumably, it gives a big performance boost if you have a huge number of datapoints.</p>
+<p>Oh, and it’s <em>on by default</em>.</p>
+<p>Unfortunately, line simplification interacts really badly with animations.</p>
+<p>The key insight is this: <em>when you change the data, you change which points are “redundant”</em>. We remove the redundant datapoints from each keyframe individually, but the shape of each keyframe’s data makes different points redundant. Thus, we end up with points popping in and out of existence all the time.</p>
+<p>You can’t have object constancy if the objects don’t constantly exist!</p>
+<p>So the library does the best it can. For each point on one keyframe, it picks <em>some point</em> on the next keyframe to associate as “the same” point. The result is the glitchy, jerky animation we saw above.</p>
+<h2 id="the-fix">The fix</h2>
+<p>Now that we understand the glitch, all we have to do to fix it is turn off line simplification. It really is that simple: animations require object constancy, so we have to keep all the objects!</p>
+<p>The animation below shows what we get when we do that. For easy comparison, I’ve included another copy of the glitchy version, too.</p>
+<div id="no line simplifying (fixed)" style="width:640px;height:400px;">
+
+</div>
+<div id="default line simplification (glitchy)" style="width:640px;height:400px;">
+
+</div>
+<p>The glitch has completely vanished from the un-simplified version (top animation). What a difference!</p>
+<h2 id="conclusions">Conclusions</h2>
+<p>So, what’s the lesson here?</p>
+<p>Should simplification be <em>off</em> by default? That is far from clear: if the library has many more “big dataset” users than animation users, line simplification could be a reasonable default.</p>
+<p>Maybe simplification should get turned off only when we animate? I doubt it: adding special logic for every pair of features could easily make the code much too complex. Besides, <code>Plotly.animate()</code> only gets called for <em>new</em> frames. If the plot was already simplified for the <em>first</em> frame, when it was created, then we’ll still have a glitch.</p>
+<p>Perhaps the lesson is about documentation? I do think they could stand to warn users more prominently than they do. The setting is mentioned in the <a href="https://plot.ly/javascript/animations/">animation docs</a>, but only in passing—in fact, I didn’t find it until I had already solved the problem! (Thus, by the same token, I could stand to temper my initial enthusiasm, and read the docs more carefully before I start.)</p>
+<p>However, I think the <em>main</em> takeaway is simply to appreciate how easy it is for choices that make sense in isolation to interact poorly in a complex system.</p>
+<script type="text/javascript">
+
+function createSinusoidalDataset()
+{
+  var y = [];
+  var y1 = [];
+
+  var counter = 0;
+  var reset_count = 12;
+
+  function reset()
+  {
+    for (var i = 0; i < 20; ++i)
+    {
+      y[i] = 2 * Math.sin(Math.PI * i / 4);
+      y1[i] = y[i] * 0.4;
+    }
+  }
+
+  function advance()
+  {
+    if (counter < reset_count)
+    {
+      ++counter;
+      for (var i = 0, i_stop = y.length; i < i_stop; ++i)
+      {
+        y[i] *= -0.512;
+        y1[i] *= 0.729;
+        y1[i] += 0.271;
+      }
+    }
+    else
+    {
+      counter = 0;
+      reset();
+    }
+  }
+
+  reset();
+  return {
+    data: {
+      y: y,
+      y1: y1,
+    },
+    advance: advance,
+    reset: reset,
+  };
+}
+
+function datasetView(dataset)
+{
+  return {
+    data: dataset.data,
+    advance: () => {},
+  };
+}
+
+function createHardcodedPlotSpecs(dataset, line_simplify)
+{
+  var traces = [
+    {
+      type: 'scatter',
+      y: dataset.data.y,
+      fill: 'tonexty',
+      line: line_simplify,
+    },{
+      type: 'scatter',
+      y: dataset.data.y1,
+      fill: 'tonexty',
+      line: line_simplify,
+    }];
+
+  return {
+    traces: traces,
+    advance_data: dataset.advance,
+  }; 
+}
+
+function createAnimatedPlot(plot, frame_duration, frame_factor=1.0) {
+  function _update(timestamp, next_timestamp)
+  {
+    if (timestamp >= next_timestamp)
+    {
+      next_timestamp += frame_duration;
+      plot.animateToNextFrame(frame_duration * frame_factor);
+    }
+
+    requestAnimationFrame(timestamp => _update(timestamp, next_timestamp));
+  }
+
+  requestAnimationFrame(timestamp => _update(timestamp, timestamp));
+
+  return {
+  };
+}
+
+function createPlotlyPlot(div_id, specs, title)
+{
+  function animateToNextFrame(duration)
+  {
+    specs.advance_data();
+
+    Plotly.animate(
+      div_id,
+      { data: specs.traces, },
+      {
+        transition: {
+          duration: duration,
+          easing: 'linear',
+        },
+        frame: {
+          duration: duration,
+          redraw: false,
+        },
+      });
+  }
+
+  layout = {
+    title: {
+      text: div_id,
+    }
+  };
+
+  Plotly.react(div_id, specs.traces, layout);
+
+  return {
+    animateToNextFrame: animateToNextFrame,
+  };
+}
+
+var dataset = createSinusoidalDataset();
+var view = datasetView(dataset);
+var fixed_specs = createHardcodedPlotSpecs(dataset, { simplify: false });
+var glitchy_specs = createHardcodedPlotSpecs(view, { simplify: true });
+
+var frame_length_ms = 1000;
+createAnimatedPlot(createPlotlyPlot('glitchy version', glitchy_specs), frame_length_ms);
+createAnimatedPlot(createPlotlyPlot('default line simplification (glitchy)', glitchy_specs), frame_length_ms);
+createAnimatedPlot(createPlotlyPlot('no line simplifying (fixed)', fixed_specs), frame_length_ms);
+
+function createSingleSineWave(id_updater)
+{
+  var x = [];
+  var y = [];
+  var id = [];
+
+  var N = 9;
+  for (var i = 0; i < N; ++i)
+  {
+    x[i] = 2 * Math.PI * i / N
+    y[i] = 2 * Math.sin(x[i]);
+    id[i] = i;
+  }
+
+  function advance()
+  {
+    rotate(x);
+    id_updater(id);
+  }
+
+  return {
+    data: {
+      x: x,
+      y: y,
+      id: id,
+    },
+    advance: advance,
+  };
+}
+
+function createObjectConstancySpecs(dataset)
+{
+  var traces = [
+    {
+      type: 'scatter',
+      x: dataset.data.x,
+      y: dataset.data.y,
+      ids: dataset.data.id,
+      line: { simplify: false, },
+      mode: 'markers',
+    }
+  ];
+
+  return {
+    traces: traces,
+    advance_data: dataset.advance,
+  }; 
+}
+
+function rotate(values)
+{
+  var first = values[0];
+  var N = values.length;
+  for (var i = 0; i < values.length - 1; ++i)
+  {
+    values[i] = values[i + 1];
+  }
+  values[values.length - 1] = first;
+}
+
+function shuffle(values) {
+  // Adapted from <https://stackoverflow.com/a/6274381>.
+  var j, x, i;
+  for (i = values.length - 1; i > 0; i--) {
+    j = Math.floor(Math.random() * (i + 1));
+    x = values[i];
+    values[i] = values[j];
+    values[j] = x;
+  }
+}
+
+var object_constancy_frame_ms = 2000;
+
+var horizontal_specs = createObjectConstancySpecs(createSingleSineWave(ids => {}));
+createAnimatedPlot(createPlotlyPlot('y-association: horizontal motion', horizontal_specs), object_constancy_frame_ms, 0.4);
+
+var vertical_specs = createObjectConstancySpecs(createSingleSineWave(rotate));
+createAnimatedPlot(createPlotlyPlot('x-association: vertical motion', vertical_specs), object_constancy_frame_ms, 0.4);
+
+var vertical_specs = createObjectConstancySpecs(createSingleSineWave(shuffle));
+createAnimatedPlot(createPlotlyPlot('random association: random motion', vertical_specs), object_constancy_frame_ms, 0.4);
+
+</script>
+
+</article>
+</div>
+
+</div>
+<div id='source'>
+<a href='https://github.com/chiphogg/chogg_name/tree/master/content/blog/js-animation-glitch.pandoc'>
+Page source on GitHub
+</a>
+</div>
+</body>
+</html>
