@@ -40,21 +40,3 @@ function Cosine(ell, sigma) {
     return sigma_squared * Math.cos(Math.PI * (x2 - x1) / ell);
   };
 };
-
-function Matern3v2(ell, sigma) {
-  var sigma_squared = sigma * sigma;
-  var scaling_factor = Math.sqrt(3) / ell;
-  return function(x1, x2) {
-    var diff = Math.abs(x1 - x2) * scaling_factor;
-    return sigma_squared * (1 + diff) * Math.exp(-diff);
-  }
-}
-
-function Matern5v2(ell, sigma) {
-  var sigma_squared = sigma * sigma;
-  var scaling_factor = Math.sqrt(5) / ell;
-  return function(x1, x2) {
-    var diff = Math.abs(x1 - x2) * scaling_factor;
-    return sigma_squared * (1 + diff + diff * diff / 3) * Math.exp(-diff);
-  }
-}
