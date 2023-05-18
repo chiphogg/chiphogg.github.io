@@ -7,17 +7,16 @@
 <link href='https://fonts.googleapis.com/css?family=Oranienbaum' rel='stylesheet' type='text/css'>
 
 <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-<!--Load the AJAX API-->
-<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6TPD9FMZC8"></script>
 <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-  ga('create', 'UA-47801434-1', 'chogg.name');
-  ga('send', 'pageview');
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  
+  gtag('config', 'G-6TPD9FMZC8');
 </script>
-<meta content='nanoc 4.8.10' name='generator'>
+<meta content='nanoc 4.12.15' name='generator'>
 <title>
 Evolutionary Exceptionalism
 [Charles R. Hogg III]
@@ -35,7 +34,7 @@ Evolutionary Exceptionalism
 <a title="Personal blog" href="/blog/">Blog</a>
 </li>
 <li>
-<a title="Things I'm working on" href="/projects/">Projects</a>
+<a title="Things I&#39;m working on" href="/projects/">Projects</a>
 </li>
 <li>
 <a title="Ways to contact me online" href="/contact/">Contact</a>
@@ -63,7 +62,7 @@ We can’t blame America’s dismal understanding of evolution on poor general e
 <p>
 There is a close relationship between GDP and an understanding of the theory of evolution – with one exception. <a href="https://t.co/stD3lBfqd1">pic.twitter.com/stD3lBfqd1</a>
 </p>
-— Max Roser (<span class="citation">@MaxCRoser</span>) <a href="https://twitter.com/MaxCRoser/status/589845245862477824">April 19, 2015</a>
+— Max Roser (<span class="citation" data-cites="MaxCRoser">@MaxCRoser</span>) <a href="https://twitter.com/MaxCRoser/status/589845245862477824">April 19, 2015</a>
 </blockquote>
 <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
 <p>The USA massively bucks the trend: despite boasting the second-highest GDP, we have the second-<em>lowest</em> rate of accepting evolution. Does the United States truly stand out as much as it appears?</p>
@@ -71,27 +70,21 @@ There is a close relationship between GDP and an understanding of the theory of 
 <p>In this dataset, the USA isn’t just an evolutionary outlier; it’s a geographical one, too. 32 of the 34 countries are European: all except for Japan and the USA. The omission of Canada, which is similar both culturally and geographically, is especially startling.</p>
 <p>This suspiciously skewed distribution raises a question: has the author <em>manufactured</em> an outlier by leaving out all the similar countries? The answer is no, for at least two reasons.</p>
 <p>First, consider the source. The data come from <a href="https://www.sciencemag.org/content/313/5788/765.summary">a 2006 Science paper</a> which combined a variety of surveys from recent years. The 32 European countries come from the <a href="https://www.icpsr.umich.edu/icpsrweb/ICPSR/studies/4563">Eurobarometer survey 63.1</a>. The remaining two countries correspond to the nationalities of the authors (two American and one Japanese). Thus, it seems more likely that the US and Japan were added to the diverse Eurobarometer data, rather than any countries being omitted.</p>
-<p>Second, even if we do include Canada, it doesn’t make the US any less of an outlier. <a href="http://angusreid.org/britons-and-canadians-more-likely-to-endorse-evolution-than-americans/">Canadian belief in evolution</a> is significantly higher than in the US (61% vs. 40%), while their <a href="https://www.cia.gov/library/publications/the-world-factbook/rankorder/2004rank.html">GDP</a> is somewhat lower ($44,500 vs. $54,800). Canada is well in line with the rest of the data.</p>
-<div class="figure">
-<img src="gdp_evo-1.png">
-
-</div>
+<p>Second, even if we do include Canada, it doesn’t make the US any less of an outlier. <a href="http://angusreid.org/britons-and-canadians-more-likely-to-endorse-evolution-than-americans/">Canadian belief in evolution</a> is significantly higher than in the US (61% vs. 40%), while their <a href="https://www.cia.gov/library/publications/the-world-factbook/rankorder/2004rank.html">GDP</a> is somewhat lower ($44,500 vs. $54,800). Canada is well in line with the rest of the data.</p>
+<p><img src="gdp_evo-1.png"></p>
 <p>Of course, there are many other countries in the world. It would be fascinating to get good survey data for them, to see whether the US is as exceptional as it seems. But among the countries we do have, the United States really does seem to stand out.</p>
 <h2 id="are-we-just-measuring-education">Are we just measuring education?</h2>
 <p>A friend suggested to me that maybe this has nothing to do with evolution in particular. Maybe this evolution score merely reflects lousy education in general. An intriguing suggestion!</p>
-<p>To find out, I checked the 2010 OECD World Education Rankings, which <a href="https://www.theguardian.com/news/datablog/2010/dec/07/world-education-rankings-maths-science-reading">The Guardian visualizes nicely here</a>. The US indeed scores poorly for Mathematics, but puts up respectable numbers for Reading and Science. The <a href="https://docs.google.com/spreadsheet/ccc?key=0AonYZs4MzlZbdEMzTjN5cHY1MmlJOHI3cmZCamRQWEE&amp;hl=en#gid=1">full dataset</a> contains 65 countries, including all but two from the evolution graph<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. Can any of these explain the USA’s outlier position?</p>
-<div class="figure">
-<img src="gdp_edu-1.png">
-
-</div>
+<p>To find out, I checked the 2010 OECD World Education Rankings, which <a href="https://www.theguardian.com/news/datablog/2010/dec/07/world-education-rankings-maths-science-reading">The Guardian visualizes nicely here</a>. The US indeed scores poorly for Mathematics, but puts up respectable numbers for Reading and Science. The <a href="https://docs.google.com/spreadsheet/ccc?key=0AonYZs4MzlZbdEMzTjN5cHY1MmlJOHI3cmZCamRQWEE&amp;hl=en#gid=1">full dataset</a> contains 65 countries, including all but two from the evolution graph<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. Can any of these explain the USA’s outlier position?</p>
+<p><img src="gdp_edu-1.png"></p>
 <p>While the US is a little low in Mathematics (middle graph), it’s certainly not an outlier. And the other two scores—Reading and Science—are precisely in line with the rest of the data.</p>
 <p>No matter how you slice it, America’s dismal understanding of evolution can’t be explained by its solidly mediocre education levels.</p>
-<div class="footnotes">
+<aside id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr>
 <ol>
-<li id="fn1"><p>Sorry, Cyprus and Malta.<a href="#fnref1">↩</a></p></li>
+<li id="fn1"><p>Sorry, Cyprus and Malta.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
-</div>
+</aside>
 
 </article>
 </div>

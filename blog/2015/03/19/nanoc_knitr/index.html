@@ -7,17 +7,16 @@
 <link href='https://fonts.googleapis.com/css?family=Oranienbaum' rel='stylesheet' type='text/css'>
 
 <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-<!--Load the AJAX API-->
-<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6TPD9FMZC8"></script>
 <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-  ga('create', 'UA-47801434-1', 'chogg.name');
-  ga('send', 'pageview');
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  
+  gtag('config', 'G-6TPD9FMZC8');
 </script>
-<meta content='nanoc 4.8.10' name='generator'>
+<meta content='nanoc 4.12.15' name='generator'>
 <title>
 Transparent, reproducible blogging with nanoc and knitr
 [Charles R. Hogg III]
@@ -35,7 +34,7 @@ Transparent, reproducible blogging with nanoc and knitr
 <a title="Personal blog" href="/blog/">Blog</a>
 </li>
 <li>
-<a title="Things I'm working on" href="/projects/">Projects</a>
+<a title="Things I&#39;m working on" href="/projects/">Projects</a>
 </li>
 <li>
 <a title="Ways to contact me online" href="/contact/">Contact</a>
@@ -75,7 +74,7 @@ When I write R code in my blog posts, nanoc runs it and includes the results in 
 <p>The <a href="https://github.com/chiphogg/chogg_name/blob/3f8e2e1851bdf90282a9414b6843195fe7dd08a7/lib/default.rb#L15-L25">knitr filter</a> has one simple job: run the snippets of R code it finds, and stick the results in the text. It doesn’t need to worry about other manipulations, since filters can be chained: the output of one is the input of the next. For instance, I use a <a href="https://pandoc.net">pandoc</a> filter to turn the output of knitr into HTML for my website.</p>
 <h3 id="dont-be-scared-by-gits-lousy-image-handling">Don’t be scared by git’s lousy image handling</h3>
 <p>I procrastinated for more than a year between writing that knitr filter and adding support for figures. The bogeyman was git’s awful reputation for handling image files. Over the years, people have developed <a href="https://stackoverflow.com/questions/540535/managing-large-binary-files-with-git">a confusing array of not-quite-satisfactory workarounds</a>. I didn’t want to go through the hassle of comparing them and committing to one.</p>
-<p>Happily, git’s handling of images turns out to be a complete non-issue, since <em>the images never end up in git</em>.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> Only the source code goes in version control. The output (including images) just gets copied to the webserver.</p>
+<p>Happily, git’s handling of images turns out to be a complete non-issue, since <em>the images never end up in git</em>.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> Only the source code goes in version control. The output (including images) just gets copied to the webserver.</p>
 <p>I wish I’d realized sooner how easy it was! I could have been making beautiful plots for years.</p>
 <h3 id="set-base.path-to-the-output-directory-for-your-post">Set <code>base.path</code> to the output directory for your post</h3>
 <p>If we want figures, the simple “filter” model isn’t enough. Instead, knitr becomes a “filter with side effects”. Here’s what I mean.</p>
@@ -84,39 +83,36 @@ When I write R code in my blog posts, nanoc runs it and includes the results in 
 <p>Fortunately, knitr has an option called <code>base.dir</code> which controls where the figures end up. Getting the figures right is as simple as <a href="https://github.com/chiphogg/chogg_name/blob/8fd1187c2cf688ec115a99a0afd04ae4f21004f3/lib/default.rb#L42-L43">setting this option to the appropriate directory for the current post</a>.</p>
 <p>Don’t be confused by the similarly-named <code>root.dir</code> option! For purposes of getting the figures to work, it’s a complete red herring.</p>
 <h2 id="a-simple-example">A simple example</h2>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Fix the seed for the random number generator (for reproducibility).</span>
-<span class="kw">set.seed</span>(<span class="dv">1</span>)
-
-<span class="co"># Let's generate 200 pairs of random numbers.</span>
-N &lt;-<span class="st"> </span><span class="dv">200</span>
-random_numbers &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dt">ncol=</span><span class="dv">2</span>, <span class="kw">rnorm</span>(<span class="dt">n=</span><span class="dv">2</span> <span class="op">*</span><span class="st"> </span>N))
-
-<span class="co"># Generate a simple covariance matrix, and take its Cholesky decomposition so</span>
-<span class="co"># we can use it to generate correlated random draws.</span>
-covariance &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="fl">0.9</span>, <span class="fl">0.9</span>, <span class="dv">1</span>), <span class="dt">nrow=</span><span class="dv">2</span>)
-cholesky &lt;-<span class="st"> </span><span class="kw">chol</span>(covariance)
-d &lt;-<span class="st"> </span><span class="kw">data.frame</span>(random_numbers <span class="op">%*%</span><span class="st"> </span>cholesky)
-<span class="kw">names</span>(d) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">'x'</span>, <span class="st">'y'</span>)
-
-<span class="co"># Make a simple scatterplot.</span>
-<span class="kw">require</span>(ggplot2)
-<span class="kw">print</span>(<span class="kw">ggplot</span>(<span class="dt">data=</span>d, <span class="kw">aes</span>(<span class="dt">x=</span>x, <span class="dt">y=</span>y))
-      <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>()
-      <span class="op">+</span><span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">"A pointless, point-filled plot"</span>)
-      )</code></pre></div>
-<div class="figure">
-<img src="correlated_scatterplot-1.png">
-
-</div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fix the seed for the random number generator (for reproducibility).</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Let's generate 200 pairs of random numbers.</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="dv">200</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>random_numbers <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">ncol=</span><span class="dv">2</span>, <span class="fu">rnorm</span>(<span class="at">n=</span><span class="dv">2</span> <span class="sc">*</span> N))</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate a simple covariance matrix, and take its Cholesky decomposition so</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co"># we can use it to generate correlated random draws.</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>covariance <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">0.9</span>, <span class="fl">0.9</span>, <span class="dv">1</span>), <span class="at">nrow=</span><span class="dv">2</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>cholesky <span class="ot">&lt;-</span> <span class="fu">chol</span>(covariance)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(random_numbers <span class="sc">%*%</span> cholesky)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(d) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">'x'</span>, <span class="st">'y'</span>)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Make a simple scatterplot.</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(ggplot2)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">ggplot</span>(<span class="at">data=</span>d, <span class="fu">aes</span>(<span class="at">x=</span>x, <span class="at">y=</span>y))</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>      <span class="sc">+</span> <span class="fu">geom_point</span>()</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>      <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">"A pointless, point-filled plot"</span>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>      )</span></code></pre></div>
+<p><img src="correlated_scatterplot-1.png"></p>
 <h2 id="join-the-fun">Join the fun!</h2>
 <p>I am far from the first to advocate and implement reproducible research in blogging. For example, <a href="https://www.carlboettiger.info/">Carl Boettiger</a> has maintained an <a href="https://www.carlboettiger.info/2012/09/28/Welcome-to-my-lab-notebook.html">open lab notebook</a> for years, and I’m sure there are many other examples which I haven’t yet seen.</p>
 <p>But I don’t want it to be merely possible; I want it to be <em>commonplace</em>. I want it to be <em>standard</em>. I want a world where it’s so easy to do it right, people are suspicious of bloggers who don’t. Sharing my implementation (and the tricks I learned along the way) is my modest contribution to making that world a reality.</p>
-<div class="footnotes">
+<aside id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr>
 <ol>
-<li id="fn1"><p>Technically, since I’m using github pages to host my website, the images <em>do</em> end up in a git repository; just not the <em>source</em> repository. If the images ever become a problem, I can just rebase and squash all the commits. Yes, that’s changing public history, but nobody should be cloning my github pages repo anyway; it’s purely for hosting and its versioned history doesn’t matter.<a href="#fnref1">↩</a></p></li>
+<li id="fn1"><p>Technically, since I’m using github pages to host my website, the images <em>do</em> end up in a git repository; just not the <em>source</em> repository. If the images ever become a problem, I can just rebase and squash all the commits. Yes, that’s changing public history, but nobody should be cloning my github pages repo anyway; it’s purely for hosting and its versioned history doesn’t matter.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
-</div>
+</aside>
 
 </article>
 </div>

@@ -7,17 +7,16 @@
 <link href='https://fonts.googleapis.com/css?family=Oranienbaum' rel='stylesheet' type='text/css'>
 
 <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-<!--Load the AJAX API-->
-<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6TPD9FMZC8"></script>
 <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-  ga('create', 'UA-47801434-1', 'chogg.name');
-  ga('send', 'pageview');
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  
+  gtag('config', 'G-6TPD9FMZC8');
 </script>
-<meta content='nanoc 4.8.10' name='generator'>
+<meta content='nanoc 4.12.15' name='generator'>
 <title>
 Stumbling upon simplicity: the Cholesky decomposition
 [Charles R. Hogg III]
@@ -35,7 +34,7 @@ Stumbling upon simplicity: the Cholesky decomposition
 <a title="Personal blog" href="/blog/">Blog</a>
 </li>
 <li>
-<a title="Things I'm working on" href="/projects/">Projects</a>
+<a title="Things I&#39;m working on" href="/projects/">Projects</a>
 </li>
 <li>
 <a title="Ways to contact me online" href="/contact/">Contact</a>
@@ -61,18 +60,15 @@ Sometimes things only seem complicated because we’ve never taken the time to p
 <p>The <a href="https://en.wikipedia.org/wiki/Cholesky_decomposition">Cholesky decomposition</a> is a key concept in matrix algebra. It’s a kind of “matrix square root”: a lower-triangular matrix <span class="math inline">\(L\)</span> which gives back the original matrix <span class="math inline">\(K\)</span> when multiplied with its transpose: <span class="math display">\[L L^\intercal = K.\]</span></p>
 <p>It’s very useful for working with high-dimensional Gaussian distributions. <span class="math inline">\(L\)</span> takes independent one-dimensional Gaussian samples (i.e., the simplest possible case), and turns them into samples from the multidimensional distribution whose covariance matrix is <span class="math inline">\(K\)</span>.</p>
 <p>For example, take the highly-correlated matrix <span class="math display">\[K = \left[\begin{array}{cc}1 &amp; 0.8 \\ 0.8 &amp; 1\end{array}\right].\]</span> Its Cholesky decomposition is <span class="math display">\[L = \left[\begin{array}{cc}1 &amp; 0 \\ 0.8 &amp; 0.6\end{array}\right],\]</span> as we can easily verify: <span class="math display">\[L L^\intercal = \left[\begin{array}{cc}1 &amp; 0 \\ 0.8 &amp; 0.6\end{array}\right] \left[\begin{array}{cc}1 &amp; 0.8 \\ 0 &amp; 0.6\end{array}\right] = \left[\begin{array}{cc}1 &amp; 0.8 \\ 0.8 &amp; 1\end{array}\right] = K.\]</span> If we now use <span class="math inline">\(L\)</span> to multiply <em>independent</em> normal samples, it turns them into <em>correlated</em> samples with a correlation of 0.8.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">num_points &lt;-<span class="st"> </span><span class="dv">200</span>
-independent_random &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dt">nrow=</span><span class="dv">2</span>, <span class="kw">rnorm</span>(<span class="dt">n=</span><span class="dv">2</span> <span class="op">*</span><span class="st"> </span>num_points))
-correlated_random &lt;-<span class="st"> </span>L <span class="op">%*%</span><span class="st"> </span>independent_random</code></pre></div>
-<div class="figure">
-<img src="correlated_plot-1.png">
-
-</div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>num_points <span class="ot">&lt;-</span> <span class="dv">200</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>independent_random <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">nrow=</span><span class="dv">2</span>, <span class="fu">rnorm</span>(<span class="at">n=</span><span class="dv">2</span> <span class="sc">*</span> num_points))</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>correlated_random <span class="ot">&lt;-</span> L <span class="sc">%*%</span> independent_random</span></code></pre></div>
+<p><img src="correlated_plot-1.png"></p>
 <p>What’s missing in the above is any notion of how to <em>calculate</em> <span class="math inline">\(L\)</span>, given <span class="math inline">\(K\)</span>. If we have a good software library, we can just use it, and treat this calculation as a black box. But if we want to dig deeper, we’re in luck: it turns out we already have enough information to compute it from scratch.</p>
 <p>Everything here is elementary, and I’m sure it’s quite well known. I’m only blogging it to share my utter delight when I stumbled across its underlying simplicity.</p>
 <h2 id="adding-one-more-row">Adding “one more row”</h2>
 <p>In the appendix for <a href="https://github.com/chiphogg/paper_gaussian_oscillators">my animation paper</a>, I asked the question: given <span class="math inline">\(n\)</span> draws from a Gaussian with a particular covariance function, can we efficiently compute the <span class="math inline">\((n+1)\)</span>st?</p>
-<p>If we have the first <span class="math inline">\(n\)</span> draws, that means we have their covariance matrix <span class="math inline">\(K_n\)</span> and its Cholesky decomposition <span class="math inline">\(L_n\)</span>, so that <span class="math inline">\(L_n L_n^\intercal = K_n\)</span>. We also have the covariance of every old point with the new point, a vector we’ll call <span class="math inline">\(k_n\)</span>, as well as the new point’s variance <span class="math inline">\(\sigma_{n + 1}^2\)</span>. Together, these form the new covariance matrix<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>, <span class="math display">\[ K_{n + 1} =
+<p>If we have the first <span class="math inline">\(n\)</span> draws, that means we have their covariance matrix <span class="math inline">\(K_n\)</span> and its Cholesky decomposition <span class="math inline">\(L_n\)</span>, so that <span class="math inline">\(L_n L_n^\intercal = K_n\)</span>. We also have the covariance of every old point with the new point, a vector we’ll call <span class="math inline">\(k_n\)</span>, as well as the new point’s variance <span class="math inline">\(\sigma_{n + 1}^2\)</span>. Together, these form the new covariance matrix<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>, <span class="math display">\[ K_{n + 1} =
 \left[\begin{array}{cc}
 K_n &amp; k_n \\
 k_n^\intercal &amp; \sigma_{n + 1}^2
@@ -92,13 +88,13 @@ K_n &amp; k_n \\
 k_n^\intercal &amp; \sigma_{n + 1}^2
 \end{array}\right]
 \]</span> What interesting equations fall out of this?</p>
-<ol style="list-style-type: decimal">
+<ol type="1">
 <li><span class="math inline">\(L_n L_n^\intercal = K_n\)</span></li>
 </ol>
 <ul>
 <li>Well, we knew that already.</li>
 </ul>
-<ol start="2" style="list-style-type: decimal">
+<ol start="2" type="1">
 <li><span class="math inline">\(L_n \ell_n = k_n\)</span></li>
 </ol>
 <ul>
@@ -128,7 +124,7 @@ k_3 \\
 <p>Going down the line, we can solve for every element of <span class="math inline">\(\ell\)</span>, without even doing any matrix manipulations.</p>
 </li>
 </ul>
-<ol start="3" style="list-style-type: decimal">
+<ol start="3" type="1">
 <li><span class="math inline">\(\ell_n^\intercal \ell_n + \gamma_{n + 1}^2 = \sigma_{n + 1} ^ 2\)</span></li>
 </ol>
 <ul>
@@ -151,71 +147,71 @@ k_3 \\
 <p>I started out trying to extend existing Cholesky matrices, and I got the ability to compute <em>any</em> Cholesky matrix thrown in for free.</p>
 <h2 id="testing-it-out">Testing it out</h2>
 <p>Let’s turn these ideas into actual code.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># This doesn't check that K actually *has* a Cholesky decomposition (not every</span>
-<span class="co"># matrix does).  Give it some garbage, and it will happily return a nonsense</span>
-<span class="co"># answer (if it doesn't crash first!).</span>
-<span class="co">#</span>
-<span class="co"># That's OK; the point is to see if it gives the right answer for suitable</span>
-<span class="co"># matrices.</span>
-<span class="co">#</span>
-<span class="co"># For this reason (and many others!), you shouldn't be using this algorithm in</span>
-<span class="co"># the real world: like the blog post it's part of, it's only good for improving</span>
-<span class="co"># your understanding of the concept.</span>
-MyCholesky &lt;-<span class="st"> </span><span class="cf">function</span>(K) {
-  n &lt;-<span class="st"> </span><span class="kw">nrow</span>(K)
-
-  <span class="co"># Start out with a matrix which is all zeroes, except for the upper-left</span>
-  <span class="co"># element.  (We know that element is the square root of the corresponding</span>
-  <span class="co"># element in K, since that's the base case.)</span>
-  L &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dv">0</span>, <span class="dt">nrow=</span>n, <span class="dt">ncol=</span>n)
-  L[<span class="dv">1</span>, <span class="dv">1</span>] &lt;-<span class="st"> </span><span class="kw">sqrt</span>(K[<span class="dv">1</span>, <span class="dv">1</span>])
-  <span class="cf">if</span> (n <span class="op">==</span><span class="st"> </span><span class="dv">1</span>) { <span class="kw">return</span>(L) }
-
-  <span class="co"># Compute each row's values.</span>
-  <span class="cf">for</span> (row <span class="cf">in</span> <span class="dv">2</span><span class="op">:</span>n) {
-    <span class="co"># This loop computes all the elements *before* the diagonal (which</span>
-    <span class="co"># corresponds to step 2 above).</span>
-    <span class="cf">for</span> (col <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>(row <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)) {
-      <span class="co"># sum_to_subtract is the contribution of the elements we've previously</span>
-      <span class="co"># computed in this new row.</span>
-      sum_to_subtract &lt;-<span class="st"> </span><span class="dv">0</span>
-      <span class="cf">if</span> (col <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>) {
-        i &lt;-<span class="st"> </span><span class="dv">1</span><span class="op">:</span>(col <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)
-        sum_to_subtract &lt;-<span class="st"> </span>L[col, i] <span class="op">%*%</span><span class="st"> </span>L[row, i]
-      }
-      L[row, col] &lt;-<span class="st"> </span>(K[row, col] <span class="op">-</span><span class="st"> </span>sum_to_subtract) <span class="op">/</span><span class="st"> </span>L[col, col]
-    }
-    <span class="co"># Now compute the element on the main diagonal (corresponding to step 3</span>
-    <span class="co"># above).</span>
-    i &lt;-<span class="st"> </span><span class="dv">1</span><span class="op">:</span>(row <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)
-    L[row, row] &lt;-<span class="st"> </span><span class="kw">sqrt</span>(K[row, row] <span class="op">-</span><span class="st"> </span>L[row, i] <span class="op">%*%</span><span class="st"> </span>L[row, i])
-  }
-  <span class="kw">return</span> (L)
-}</code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># This doesn't check that K actually *has* a Cholesky decomposition (not every</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># matrix does).  Give it some garbage, and it will happily return a nonsense</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># answer (if it doesn't crash first!).</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># That's OK; the point is to see if it gives the right answer for suitable</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># matrices.</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># For this reason (and many others!), you shouldn't be using this algorithm in</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># the real world: like the blog post it's part of, it's only good for improving</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># your understanding of the concept.</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>MyCholesky <span class="ot">&lt;-</span> <span class="cf">function</span>(K) {</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(K)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Start out with a matrix which is all zeroes, except for the upper-left</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># element.  (We know that element is the square root of the corresponding</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># element in K, since that's the base case.)</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  L <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="at">nrow=</span>n, <span class="at">ncol=</span>n)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  L[<span class="dv">1</span>, <span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(K[<span class="dv">1</span>, <span class="dv">1</span>])</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (n <span class="sc">==</span> <span class="dv">1</span>) { <span class="fu">return</span>(L) }</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Compute each row's values.</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (row <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span>n) {</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># This loop computes all the elements *before* the diagonal (which</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># corresponds to step 2 above).</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (col <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>(row <span class="sc">-</span> <span class="dv">1</span>)) {</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>      <span class="co"># sum_to_subtract is the contribution of the elements we've previously</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>      <span class="co"># computed in this new row.</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>      sum_to_subtract <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (col <span class="sc">&gt;</span> <span class="dv">1</span>) {</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>        i <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span>(col <span class="sc">-</span> <span class="dv">1</span>)</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>        sum_to_subtract <span class="ot">&lt;-</span> L[col, i] <span class="sc">%*%</span> L[row, i]</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>      L[row, col] <span class="ot">&lt;-</span> (K[row, col] <span class="sc">-</span> sum_to_subtract) <span class="sc">/</span> L[col, col]</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Now compute the element on the main diagonal (corresponding to step 3</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>    <span class="co"># above).</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>    i <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span>(row <span class="sc">-</span> <span class="dv">1</span>)</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>    L[row, row] <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(K[row, row] <span class="sc">-</span> L[row, i] <span class="sc">%*%</span> L[row, i])</span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span> (L)</span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <p>To test this, I’ll construct a random <span class="math inline">\((20 \times 20)\)</span> covariance matrix. I’ll compute its Cholesky decomposition twice—once with my method, and once with R’s built-in <code>chol()</code> function—and see how close the two answers are.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Generate some points.</span>
-x &lt;-<span class="st"> </span><span class="kw">sort</span>(<span class="kw">rnorm</span>(<span class="dt">n=</span>N))
-
-<span class="co"># Construct a matrix from a covariance function which I know is valid.</span>
-<span class="co"># (We'll add some noise on the diagonal to help it converge).</span>
-K &lt;-<span class="st"> </span><span class="kw">outer</span>(x, x,
-           <span class="cf">function</span>(a, b) {
-             <span class="kw">exp</span>(<span class="op">-</span>(a <span class="op">-</span><span class="st"> </span>b)<span class="op">^</span><span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ifelse</span>(a<span class="op">==</span>b, <span class="fl">0.01</span>, <span class="fl">0.0</span>)
-           })
-
-<span class="co"># What are the biggest and smallest differences between my method,</span>
-<span class="co"># and R's built-in method I know is correct?</span>
-<span class="kw">range</span>(<span class="kw">MyCholesky</span>(K) <span class="op">-</span><span class="st"> </span><span class="kw">t</span>(<span class="kw">chol</span>(K)))</code></pre></div>
-<pre><code>## [1] -2.303713e-15  3.663736e-15</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate some points.</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">rnorm</span>(<span class="at">n=</span>N))</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Construct a matrix from a covariance function which I know is valid.</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># (We'll add some noise on the diagonal to help it converge).</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>K <span class="ot">&lt;-</span> <span class="fu">outer</span>(x, x,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>           <span class="cf">function</span>(a, b) {</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>             <span class="fu">exp</span>(<span class="sc">-</span>(a <span class="sc">-</span> b)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fu">ifelse</span>(a<span class="sc">==</span>b, <span class="fl">0.01</span>, <span class="fl">0.0</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>           })</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co"># What are the biggest and smallest differences between my method,</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co"># and R's built-in method I know is correct?</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="fu">range</span>(<span class="fu">MyCholesky</span>(K) <span class="sc">-</span> <span class="fu">t</span>(<span class="fu">chol</span>(K)))</span></code></pre></div>
+<pre><code>## [1] -1.915135e-15  2.720046e-15</code></pre>
 <p>So the biggest difference was smaller than <span class="math inline">\(10^{-14}\)</span>. Looks pretty good to me!</p>
 <h2 id="conclusions">Conclusions</h2>
 <p>Don’t be intimidated by theorems with <a href="https://biostat-lists.wustl.edu/sympa/arc/s-news/2000-10/msg00172.html">hard to pronounce</a> names. They often contain extremely simple ideas.</p>
-<div class="footnotes">
+<aside id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr>
 <ol>
-<li id="fn1"><p>Note that this is a <a href="https://en.wikipedia.org/wiki/Block_matrix">block matrix</a>: one whose elements stand for other matrices. Specifically, <span class="math inline">\(K_n\)</span> is an <span class="math inline">\((n \times n)\)</span> matrix; <span class="math inline">\(k_n\)</span> is <span class="math inline">\((n \times 1)\)</span> (i.e., a vector), and <span class="math inline">\(\sigma_{n + 1}^2\)</span> is <span class="math inline">\((1 \times 1)\)</span> (i.e., a scalar).<a href="#fnref1">↩</a></p></li>
+<li id="fn1"><p>Note that this is a <a href="https://en.wikipedia.org/wiki/Block_matrix">block matrix</a>: one whose elements stand for other matrices. Specifically, <span class="math inline">\(K_n\)</span> is an <span class="math inline">\((n \times n)\)</span> matrix; <span class="math inline">\(k_n\)</span> is <span class="math inline">\((n \times 1)\)</span> (i.e., a vector), and <span class="math inline">\(\sigma_{n + 1}^2\)</span> is <span class="math inline">\((1 \times 1)\)</span> (i.e., a scalar).<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
-</div>
+</aside>
 
 </article>
 </div>
